@@ -22,6 +22,27 @@
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
             </NavLink>
         </li>
+        <AuthorizeView Roles="Doctora">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="doctora">
+                    <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
+                </NavLink>
+            </li>
+        </AuthorizeView>
+        <AuthorizeView Roles="Secretaria">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="secretaria">
+                    <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
+                </NavLink>
+            </li>
+        </AuthorizeView>
+        <AuthorizeView Roles="Paciente">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="paciente">
+                    <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
+                </NavLink>
+            </li>
+        </AuthorizeView>
     </ul>
 </div>
 
