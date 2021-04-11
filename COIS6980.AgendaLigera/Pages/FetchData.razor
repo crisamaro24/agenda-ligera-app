@@ -1,7 +1,7 @@
 ﻿@page "/fetchdata"
 
 @using COIS6980.AgendaLigera.Data
-@inject WeatherForecastService ForecastService
+@inject IWeatherForecastService _forecastService
 
 <h1>Weather forecast</h1>
 
@@ -41,6 +41,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        forecasts = await _forecastService.GetForecastAsync(DateTime.Now);
     }
 }
