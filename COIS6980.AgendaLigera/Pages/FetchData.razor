@@ -2,6 +2,7 @@
 
 @using COIS6980.AgendaLigera.Data
 @inject IWeatherForecastService _forecastService
+@inject NotificationService _notificationService
 
 <h1>Weather forecast</h1>
 
@@ -9,7 +10,8 @@
 
 @if (forecasts == null)
 {
-    <p><em>Loading...</em></p>
+    @*<p><em>Loading...</em></p>*@
+    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" Style="margin-bottom: 20px" />
 }
 else
 {
@@ -38,9 +40,33 @@ else
 
 @code {
     private WeatherForecast[] forecasts;
+    private NotificationMessage notification;
 
     protected override async Task OnInitializedAsync()
     {
         forecasts = await _forecastService.GetForecastAsync(DateTime.Now);
+
+        if (forecasts != null)
+        {
+            notification = new NotificationMessage()
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "Success!",
+                Detail = "We did it...",
+                Duration = 3000
+            };
+        }
+        else
+        {
+            notification = new NotificationMessage()
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Error!",
+                Detail = "Failure is not an option...",
+                Duration = 3000
+            };
+        }
+
+        _notificationService.Notify(notification);
     }
 }
