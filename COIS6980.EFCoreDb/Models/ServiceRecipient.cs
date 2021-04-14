@@ -18,6 +18,7 @@ namespace COIS6980.EFCoreDb.Models
         public string LastName { get; set; }
         public bool? IsActive { get; set; }
         public bool IsDeleted { get; set; }
+        public DateTime CreatedDate { get; set; }
 
         public virtual AspNetUser User { get; set; }
         public virtual ICollection<Appointment> Appointments { get; set; }

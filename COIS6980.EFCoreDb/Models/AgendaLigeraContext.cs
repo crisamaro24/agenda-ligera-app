@@ -203,6 +203,8 @@ namespace COIS6980.EFCoreDb.Models
             {
                 entity.ToTable("ServiceRecipient", "App");
 
+                entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getutcdate())");
+
                 entity.Property(e => e.FirstName)
                     .IsRequired()
                     .HasMaxLength(100)
