@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Radzen;
+using SendGrid.Extensions.DependencyInjection;
 using System;
 
 namespace COIS6980.AgendaLigera
@@ -61,6 +62,11 @@ namespace COIS6980.AgendaLigera
                 }));
 
             services.AddHangfireServer();
+
+            services.AddSendGrid(config =>
+            {
+                config.ApiKey = Configuration["SendGrid:ApiKey"];
+            });
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddRoles<IdentityRole>()
