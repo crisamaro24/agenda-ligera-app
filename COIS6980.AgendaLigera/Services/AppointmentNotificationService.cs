@@ -1,5 +1,7 @@
 ﻿using COIS6980.AgendaLigera.Models.Appointment;
+using COIS6980.AgendaLigera.Models.Options;
 using COIS6980.EFCoreDb.Models;
+using Microsoft.Extensions.Options;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System;
@@ -18,10 +20,12 @@ namespace COIS6980.AgendaLigera.Services
     {
         private readonly ISendGridClient _emailClient;
         private readonly IAppointmentService _appointmentService;
-        public AppointmentNotificationService(ISendGridClient emailClient, IAppointmentService appointmentService)
+        private readonly SendGridOptions _sendGridOptions;
+        public AppointmentNotificationService(ISendGridClient emailClient, IAppointmentService appointmentService, IOptions<SendGridOptions> sendGridOptions)
         {
             _emailClient = emailClient;
             _appointmentService = appointmentService;
+            _sendGridOptions = sendGridOptions.Value;
         }
 
         public async Task SendAppointmentReminders()
@@ -43,25 +47,30 @@ namespace COIS6980.AgendaLigera.Services
 
                 foreach (var appointment in appointmentReminders)
                 {
-                    await SendEmailToSingleRecipient(appointment.ServiceRecipientEmail, appointment.ServiceRecipientName);
+                    await SendEmailToSingleRecipient(
+                        appointment.ServiceRecipientEmail,
+                        appointment.ServiceRecipientName,
+                        "Recordatorio de cita",
+                        "Te esperamos en nuestro establecimiento.",
+                        "<strong>Te esperamos en nuestro establecimiento.</strong>");
                 }
             }
         }
 
-        public async Task<bool> SendEmailToSingleRecipient(
-            string recipientEmail = "thebuilderbob223@gmail.com",
-            string recipientName = "Cristian",
-            string subject = "Recordatorio de cita",
-            string plainTextContent = "Te esperamos en nuestro establecimiento pronto.",
-            string htmlContent = "<strong>Te esperamos en nuestro establecimiento pronto.</strong>")
+        public async Task<bool> SendEmailToSingleRecipient(string recipientEmail, string recipientName, string subject, string plainTextContent, string htmlContent)
         {
-            var fromEmail = new EmailAddress("cristianamaro7@outlook.com", "Cristian Amaro");
+            var fromEmail = new EmailAddress(_sendGridOptions.SenderEmail, _sendGridOptions.SenderName);
             var toEmail = new EmailAddress(recipientEmail, recipientName);
             var emailMessage = MailHelper.CreateSingleEmail(fromEmail, toEmail, subject, plainTextContent, htmlContent);
 
             var response = await _emailClient.SendEmailAsync(emailMessage);
 
             return response?.IsSuccessStatusCode ?? false;
+        }
+
+        public async Task<bool> SendEmailTemplateToSingleRecipient()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,5 +1,6 @@
 using COIS6980.AgendaLigera.Areas.Identity;
 using COIS6980.AgendaLigera.Data;
+using COIS6980.AgendaLigera.Models.Options;
 using COIS6980.AgendaLigera.Services;
 using COIS6980.EFCoreDb.Models;
 using Hangfire;
@@ -66,7 +67,9 @@ namespace COIS6980.AgendaLigera
             // Remove later
             services.AddScoped<IWeatherForecastService, WeatherForecastService>();
 
-            // Add scoped services here
+            // Configuration (Options pattern)
+            services.Configure<SendGridOptions>(Configuration.GetSection("SendGrid"));
+
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IAppointmentNotificationService, AppointmentNotificationService>();
 
