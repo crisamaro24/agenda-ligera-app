@@ -1,5 +1,6 @@
 using COIS6980.AgendaLigera.Areas.Identity;
 using COIS6980.AgendaLigera.Data;
+using COIS6980.AgendaLigera.Services;
 using COIS6980.EFCoreDb.Models;
 using Hangfire;
 using Hangfire.SqlServer;
@@ -48,6 +49,34 @@ namespace COIS6980.AgendaLigera
                     });
             });
 
+            services.AddSendGrid(config =>
+            {
+                config.ApiKey = Configuration["SendGrid:ApiKey"];
+            });
+
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+            services.AddDatabaseDeveloperPageExceptionFilter();
+
+            // Remove later
+            services.AddScoped<IWeatherForecastService, WeatherForecastService>();
+
+            // Add scoped services here
+            services.AddScoped<IAppointmentService, AppointmentService>();
+            services.AddScoped<IAppointmentNotificationService, AppointmentNotificationService>();
+
+            // Radzen components
+            services.AddScoped<DialogService>();
+            services.AddScoped<NotificationService>();
+            services.AddScoped<TooltipService>();
+            services.AddScoped<ContextMenuService>();
+
+            // Hangfire
             services.AddHangfire(config => config
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -62,27 +91,6 @@ namespace COIS6980.AgendaLigera
                 }));
 
             services.AddHangfireServer();
-
-            services.AddSendGrid(config =>
-            {
-                config.ApiKey = Configuration["SendGrid:ApiKey"];
-            });
-
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            services.AddRazorPages();
-            services.AddServerSideBlazor();
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            services.AddDatabaseDeveloperPageExceptionFilter();
-            services.AddScoped<IWeatherForecastService, WeatherForecastService>();
-
-            // Radzen components
-            services.AddScoped<DialogService>();
-            services.AddScoped<NotificationService>();
-            services.AddScoped<TooltipService>();
-            services.AddScoped<ContextMenuService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -115,6 +123,8 @@ namespace COIS6980.AgendaLigera
                 endpoints.MapFallbackToPage("/_Host");
                 endpoints.MapHangfireDashboard();
             });
+
+            RecurringJob.AddOrUpdate<IAppointmentNotificationService>(job => job.SendAppointmentReminders(), Cron.Daily(13));
         }
     }
 }
