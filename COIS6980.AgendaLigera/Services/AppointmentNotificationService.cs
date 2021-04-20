@@ -6,6 +6,7 @@ using SendGrid;
 using SendGrid.Helpers.Mail;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
@@ -47,12 +48,7 @@ namespace COIS6980.AgendaLigera.Services
 
                 foreach (var appointment in appointmentReminders)
                 {
-                    await SendEmailToSingleRecipient(
-                        appointment.ServiceRecipientEmail,
-                        appointment.ServiceRecipientName,
-                        "Recordatorio de cita",
-                        "Te esperamos en nuestro establecimiento.",
-                        "<strong>Te esperamos en nuestro establecimiento.</strong>");
+                    await SendEmailTemplateToSingleRecipient(appointment);
                 }
             }
         }
@@ -68,9 +64,28 @@ namespace COIS6980.AgendaLigera.Services
             return response?.IsSuccessStatusCode ?? false;
         }
 
-        public async Task<bool> SendEmailTemplateToSingleRecipient()
+        public async Task<bool> SendEmailTemplateToSingleRecipient(AppointmentReminderDetails reminderDetails)
         {
-            throw new NotImplementedException();
+            var fromEmail = new EmailAddress(_sendGridOptions.SenderEmail, _sendGridOptions.SenderName);
+            var toEmail = new EmailAddress(reminderDetails.ServiceRecipientEmail, reminderDetails.ServiceRecipientName);
+            var emailMessage = new SendGridMessage();
+
+            emailMessage.SetFrom(fromEmail);
+            emailMessage.AddTo(toEmail);
+            emailMessage.SetTemplateId(_sendGridOptions.ReminderEmailTemplateId);
+
+            emailMessage.SetTemplateData(new ReminderEmailTemplateData()
+            {
+                ServiceName = reminderDetails.ServiceName,
+                When = reminderDetails.When.ToString("D", new CultureInfo("es-ES")),
+                CustomerName = reminderDetails.ServiceRecipientName,
+                EmployeeName = reminderDetails.ServiceProviderName,
+                CompanyName = _sendGridOptions.CompanyName
+            });
+
+            var response = await _emailClient.SendEmailAsync(emailMessage);
+
+            return response?.IsSuccessStatusCode ?? false;
         }
     }
 }
