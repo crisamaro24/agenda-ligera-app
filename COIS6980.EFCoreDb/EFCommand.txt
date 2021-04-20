@@ -1,2 +1,2 @@
 ﻿Entity Framework Scaffold Command
-Scaffold-DbContext "Server=localhost;Database=AgendaLigera;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -StartupProject COIS6980.EFCoreDb
+Scaffold-DbContext "Server=localhost;Database=AgendaLigera;Trusted_Connection=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -StartupProject COIS6980.EFCoreDb -Tables Appointment, Employee, Service, ServiceRecipient, ServiceSchedule, AspNetRoleClaims, AspNetRoles, AspNetUserClaims, AspNetUserLogins, AspNetUserRoles, AspNetUsers, AspNetUserTokens -Force

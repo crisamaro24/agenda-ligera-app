@@ -13,8 +13,6 @@ namespace COIS6980.EFCoreDb.Models
             AspNetUserLogins = new HashSet<AspNetUserLogin>();
             AspNetUserRoles = new HashSet<AspNetUserRole>();
             AspNetUserTokens = new HashSet<AspNetUserToken>();
-            Employees = new HashSet<Employee>();
-            ServiceRecipients = new HashSet<ServiceRecipient>();
         }
 
         public string Id { get; set; }
@@ -33,11 +31,11 @@ namespace COIS6980.EFCoreDb.Models
         public bool LockoutEnabled { get; set; }
         public int AccessFailedCount { get; set; }
 
+        public virtual Employee Employee { get; set; }
+        public virtual ServiceRecipient ServiceRecipient { get; set; }
         public virtual ICollection<AspNetUserClaim> AspNetUserClaims { get; set; }
         public virtual ICollection<AspNetUserLogin> AspNetUserLogins { get; set; }
         public virtual ICollection<AspNetUserRole> AspNetUserRoles { get; set; }
         public virtual ICollection<AspNetUserToken> AspNetUserTokens { get; set; }
-        public virtual ICollection<Employee> Employees { get; set; }
-        public virtual ICollection<ServiceRecipient> ServiceRecipients { get; set; }
     }
 }

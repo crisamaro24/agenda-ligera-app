@@ -153,6 +153,9 @@ namespace COIS6980.EFCoreDb.Models
             {
                 entity.ToTable("Employee", "App");
 
+                entity.HasIndex(e => e.UserId, "UQ__Employee__1788CC4DA12EE131")
+                    .IsUnique();
+
                 entity.Property(e => e.FirstName)
                     .IsRequired()
                     .HasMaxLength(100)
@@ -166,13 +169,11 @@ namespace COIS6980.EFCoreDb.Models
                     .HasMaxLength(200)
                     .IsUnicode(false);
 
-                entity.Property(e => e.UserId)
-                    .IsRequired()
-                    .HasMaxLength(450);
+                entity.Property(e => e.UserId).IsRequired();
 
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.Employees)
-                    .HasForeignKey(d => d.UserId)
+                    .WithOne(p => p.Employee)
+                    .HasForeignKey<Employee>(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Employee_AspNetUsers");
             });
@@ -203,6 +204,9 @@ namespace COIS6980.EFCoreDb.Models
             {
                 entity.ToTable("ServiceRecipient", "App");
 
+                entity.HasIndex(e => e.UserId, "UQ__ServiceR__1788CC4D9E5C47EC")
+                    .IsUnique();
+
                 entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getutcdate())");
 
                 entity.Property(e => e.FirstName)
@@ -218,13 +222,11 @@ namespace COIS6980.EFCoreDb.Models
                     .HasMaxLength(200)
                     .IsUnicode(false);
 
-                entity.Property(e => e.UserId)
-                    .IsRequired()
-                    .HasMaxLength(450);
+                entity.Property(e => e.UserId).IsRequired();
 
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.ServiceRecipients)
-                    .HasForeignKey(d => d.UserId)
+                    .WithOne(p => p.ServiceRecipient)
+                    .HasForeignKey<ServiceRecipient>(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_ServiceRecipient_AspNetUsers");
             });
