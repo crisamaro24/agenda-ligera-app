@@ -22,4 +22,10 @@
     <ProjectReference Include="..\COIS6980.EFCoreDb\COIS6980.EFCoreDb.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\Calendar\" />
+    <Folder Include="Pages\Dashboard\" />
+    <Folder Include="Pages\Reports\" />
+  </ItemGroup>
+
 </Project>

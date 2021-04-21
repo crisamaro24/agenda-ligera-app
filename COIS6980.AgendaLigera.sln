@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31025.218
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "COIS6980.AgendaLigera", "COIS6980.AgendaLigera\COIS6980.AgendaLigera.csproj", "{24460338-6624-483D-9F38-291B4B7E5F35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COIS6980.EFCoreDb", "COIS6980.EFCoreDb\COIS6980.EFCoreDb.csproj", "{12123939-8CD4-450C-BC84-A70381E035CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "COIS6980.EFCoreDb", "COIS6980.EFCoreDb\COIS6980.EFCoreDb.csproj", "{12123939-8CD4-450C-BC84-A70381E035CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

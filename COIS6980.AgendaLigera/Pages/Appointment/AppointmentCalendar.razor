@@ -1,0 +1,34 @@
+﻿@inject IAppointmentService _appointmentService
+
+<RadzenScheduler @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
+    Data=@appointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
+    SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
+    <RadzenDayView />
+    <RadzenWeekView />
+    <RadzenMonthView />
+</RadzenScheduler>
+
+@code {
+    RadzenScheduler<AppointmentCalendarDetails> scheduler;
+    IList<AppointmentCalendarDetails> appointments;
+
+    async Task OnLoadData(SchedulerLoadDataEventArgs args)
+    {
+        appointments = await _appointmentService.GetAppointmentsBetweenDates(args.Start, args.End);
+    }
+
+    async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
+    {
+        
+    }
+
+    async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentCalendarDetails> args)
+    {
+        
+    }
+
+    void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<AppointmentCalendarDetails> args)
+    {
+        
+    }
+}
