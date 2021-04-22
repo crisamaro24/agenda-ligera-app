@@ -1,25 +1,42 @@
 ﻿@inject IAppointmentService _appointmentService
 
-<RadzenScheduler @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
-    Data=@appointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
-    SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
-    <RadzenDayView />
-    <RadzenWeekView />
-    <RadzenMonthView />
-</RadzenScheduler>
+<div class="row">
+    <div class="col-xl-8">
+        <RadzenScheduler @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
+        Data=@calendarAppointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
+        SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
+            <RadzenDayView />
+            <RadzenWeekView />
+            <RadzenMonthView />
+        </RadzenScheduler>
+    </div>
+    <div class="col-xl-4">
+        <h3>@displayedDate</h3>
+        <!--Add <RadzenTree>-->
+    </div>
+</div>
 
 @code {
+    private string displayedDate;
     RadzenScheduler<AppointmentCalendarDetails> scheduler;
-    IList<AppointmentCalendarDetails> appointments;
+    IList<AppointmentCalendarDetails> calendarAppointments;
+    IList<EmployeeServiceAppointments> employeeAppointments;
+
+    protected override void OnInitialized()
+    {
+       displayedDate = DateTime.UtcNow.ToLocalTime().Date.ToString("D", new CultureInfo("es-ES"));
+
+       // Get employee appointments for today and populate <RadzenTree>
+    }
 
     async Task OnLoadData(SchedulerLoadDataEventArgs args)
     {
-        appointments = await _appointmentService.GetAppointmentsBetweenDates(args.Start, args.End);
+        calendarAppointments = await _appointmentService.GetAppointmentsBetweenDates(args.Start, args.End);
     }
 
     async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
     {
-        
+        // Get employee appointments for selected date and populate <RadzenTree>
     }
 
     async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentCalendarDetails> args)

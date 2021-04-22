@@ -89,5 +89,8 @@ namespace COIS6980.AgendaLigera.Services
 
             return calendarAppointments;
         }
+
+        // Add method to get appointments based on specified date and employeeId
+        // Return List<EmployeeServiceAppointments>
     }
 }
