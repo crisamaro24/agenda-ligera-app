@@ -17,6 +17,11 @@ namespace COIS6980.AgendaLigera.Services
             string userId = null,
             bool active = true,
             bool deleted = false);
+        Task<List<EmployeeServiceAppointments>> GetEmployeeServiceAppointmentsByDate(
+            DateTime date,
+            int? employeeId = null,
+            bool active = true,
+            bool deleted = false);
     }
     public class AppointmentService : IAppointmentService
     {
@@ -65,7 +70,8 @@ namespace COIS6980.AgendaLigera.Services
             if (!string.IsNullOrWhiteSpace(userId))
             {
                 appointmentsQuery = appointmentsQuery
-                    .Where(x => x.ServiceRecipient.User.Id == userId || x.ServiceSchedule.Service.Employee.User.Id == userId);
+                    .Where(x => x.ServiceRecipient.User.Id == userId
+                    || x.ServiceSchedule.Service.Employee.User.Id == userId);
             }
 
             var appointmentsFound = await appointmentsQuery.ToListAsync();
@@ -90,7 +96,77 @@ namespace COIS6980.AgendaLigera.Services
             return calendarAppointments;
         }
 
-        // Add method to get appointments based on specified date and employeeId
-        // Return List<EmployeeServiceAppointments>
+        public async Task<List<EmployeeServiceAppointments>> GetEmployeeServiceAppointmentsByDate(
+            DateTime date,
+            int? employeeId = null,
+            bool active = true,
+            bool deleted = false)
+        {
+            var appointmentsQuery = _agendaLigeraCtx.Appointments
+                .Include(x => x.ServiceRecipient)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.ServiceSchedule)
+                    .ThenInclude(x => x.Service)
+                    .ThenInclude(x => x.Employee)
+                .Where(x => x.IsActive == active && x.IsDeleted == deleted)
+                .Where(x => x.ServiceSchedule.StartDate.Date == date);
+
+            if (employeeId != null)
+            {
+                appointmentsQuery = appointmentsQuery
+                    .Where(x => x.ServiceSchedule.Service.Employee.EmployeeId == employeeId);
+            }
+
+            var appointmentsFound = await appointmentsQuery.ToListAsync();
+
+            if ((appointmentsFound?.Count ?? 0) == 0)
+                return new List<EmployeeServiceAppointments>();
+
+            // Initialize list of appointments to return
+            var employeeServiceAppointments = new List<EmployeeServiceAppointments>();
+
+            foreach (var appointment in appointmentsFound)
+            {
+                employeeId ??= appointment.ServiceSchedule.Service.EmployeeId;
+                var serviceId = appointment.ServiceSchedule.ServiceId;
+                var customerName = appointment.ServiceRecipient.FirstName + " " + appointment.ServiceRecipient.LastName;
+                var startTime = appointment.ServiceSchedule.StartDate.ToString("hh:mm tt");
+                var endTime = appointment.ServiceSchedule.EndDate.ToString("hh:mm tt");
+
+                var repeatedEmployeeService = employeeServiceAppointments
+                    .FirstOrDefault(x => x.EmployeeId == employeeId.Value
+                    && x.ServiceId == serviceId);
+
+                if (repeatedEmployeeService == null)
+                {
+                    var serviceName = appointment.ServiceSchedule.Service.Title;
+                    var employeeName = appointment.ServiceSchedule.Service.Employee.FirstName + " " +
+                        appointment.ServiceSchedule.Service.Employee.LastName;
+
+                    employeeServiceAppointments.Add(new EmployeeServiceAppointments()
+                    {
+                        EmployeeId = employeeId.Value,
+                        ServiceId = serviceId,
+                        ServiceTitle = serviceName + " por " + employeeName,
+                        Customers = new List<ServiceCustomer>()
+                        {
+                            new ServiceCustomer()
+                            {
+                                ServiceCustomerDescription = customerName + " @ " + startTime + " - " + endTime
+                            }
+                        }
+                    });
+                }
+                else
+                {
+                    repeatedEmployeeService.Customers.Add(new ServiceCustomer()
+                    {
+                        ServiceCustomerDescription = customerName + " @ " + startTime + " - " + endTime
+                    });
+                }
+            }
+
+            return employeeServiceAppointments;
+        }
     }
 }

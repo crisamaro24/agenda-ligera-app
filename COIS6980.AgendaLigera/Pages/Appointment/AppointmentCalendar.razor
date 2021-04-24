@@ -2,7 +2,7 @@
 
 <div class="row">
     <div class="col-xl-8">
-        <RadzenScheduler @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
+        <RadzenScheduler style="height: 768px;" @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
         Data=@calendarAppointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
         SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
             <RadzenDayView />
@@ -12,7 +12,19 @@
     </div>
     <div class="col-xl-4">
         <h3>@displayedDate</h3>
-        <!--Add <RadzenTree>-->
+        <hr />
+
+        @if ((employeeAppointments?.Count ?? 0) > 0)
+        {
+            <RadzenTree Data="@employeeAppointments">
+                <RadzenTreeLevel TextProperty="ServiceTitle" ChildrenProperty="Customers" />
+                <RadzenTreeLevel TextProperty="ServiceCustomerDescription" HasChildren="@((customer) => false)" />
+            </RadzenTree>
+        }
+        else
+        {
+            <h3>Disfruta tu día. No tiene ninguna cita hoy.</h3>
+        }
     </div>
 </div>
 
@@ -22,30 +34,31 @@
     IList<AppointmentCalendarDetails> calendarAppointments;
     IList<EmployeeServiceAppointments> employeeAppointments;
 
-    protected override void OnInitialized()
-    {
-       displayedDate = DateTime.UtcNow.ToLocalTime().Date.ToString("D", new CultureInfo("es-ES"));
-
-       // Get employee appointments for today and populate <RadzenTree>
-    }
-
     async Task OnLoadData(SchedulerLoadDataEventArgs args)
     {
+        // Appointment details for current day
+        var today = DateTime.UtcNow.ToLocalTime().Date;
+        displayedDate = today.ToString("D", new CultureInfo("es-ES"));
+        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(today);
+
+        // Populate calendar
         calendarAppointments = await _appointmentService.GetAppointmentsBetweenDates(args.Start, args.End);
     }
 
     async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
     {
-        // Get employee appointments for selected date and populate <RadzenTree>
+        // Get employee appointments for selected date
+        displayedDate = args.Start.Date.ToString("D", new CultureInfo("es-ES"));
+        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(args.Start.Date);
     }
 
     async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentCalendarDetails> args)
     {
-        
+        // Display appointment details in a modal with a reschedule and cancel button.
     }
 
     void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<AppointmentCalendarDetails> args)
     {
-        
+        // Choose a nice color for appointments
     }
 }
