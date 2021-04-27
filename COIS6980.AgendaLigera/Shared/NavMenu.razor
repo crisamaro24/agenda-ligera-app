@@ -13,33 +13,42 @@
             </NavLink>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
             <NavLink class="nav-link" href="fetchdata">
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
             </NavLink>
         </li>
+        <AuthorizeView Roles="Doctora,Secretaria,Paciente">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="dashboard">
+                    <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
+                </NavLink>
+            </li>
+        </AuthorizeView>
+        <AuthorizeView Roles="Doctora,Secretaria">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="calendario">
+                    <span class="oi oi-calendar" aria-hidden="true"></span> Calendario
+                </NavLink>
+            </li>
+        </AuthorizeView>
+        <AuthorizeView Roles="Doctora,Secretaria">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="pacientes">
+                    <span class="oi oi-people" aria-hidden="true"></span> Pacientes
+                </NavLink>
+            </li>
+        </AuthorizeView>
         <AuthorizeView Roles="Doctora">
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="doctora">
-                    <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
+                <NavLink class="nav-link" href="reportes">
+                    <span class="oi oi-graph" aria-hidden="true"></span> Reportes
                 </NavLink>
             </li>
         </AuthorizeView>
-        <AuthorizeView Roles="Secretaria">
+        <AuthorizeView Roles="Doctora,Secretaria,Paciente">
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="secretaria">
-                    <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
-                </NavLink>
-            </li>
-        </AuthorizeView>
-        <AuthorizeView Roles="Paciente">
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="paciente">
-                    <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
+                <NavLink class="nav-link" href="cuenta-de-usuario">
+                    <span class="oi oi-person" aria-hidden="true"></span> Cuenta de Usuario
                 </NavLink>
             </li>
         </AuthorizeView>

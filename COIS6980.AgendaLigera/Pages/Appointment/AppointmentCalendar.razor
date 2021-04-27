@@ -23,7 +23,7 @@
         }
         else
         {
-            <h3>Disfruta tu día. No tiene ninguna cita hoy.</h3>
+            <h3>No tiene ninguna cita hoy.</h3>
         }
     </div>
 </div>
@@ -34,13 +34,16 @@
     IList<AppointmentCalendarDetails> calendarAppointments;
     IList<EmployeeServiceAppointments> employeeAppointments;
 
-    async Task OnLoadData(SchedulerLoadDataEventArgs args)
+    protected override async Task OnParametersSetAsync()
     {
         // Appointment details for current day
         var today = DateTime.UtcNow.ToLocalTime().Date;
         displayedDate = today.ToString("D", new CultureInfo("es-ES"));
         employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(today);
+    }
 
+    async Task OnLoadData(SchedulerLoadDataEventArgs args)
+    {
         // Populate calendar
         calendarAppointments = await _appointmentService.GetAppointmentsBetweenDates(args.Start, args.End);
     }

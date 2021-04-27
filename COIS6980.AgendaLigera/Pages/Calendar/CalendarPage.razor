@@ -1,0 +1,10 @@
+﻿@page "/calendario"
+@attribute [Authorize(Roles = "Doctora,Secretaria")]
+
+<h3>Calendario de citas</h3>
+
+<AppointmentCalendar></AppointmentCalendar>
+
+@code {
+
+}

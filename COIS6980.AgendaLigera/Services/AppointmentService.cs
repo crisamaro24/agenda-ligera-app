@@ -117,7 +117,7 @@ namespace COIS6980.AgendaLigera.Services
                     .Where(x => x.ServiceSchedule.Service.Employee.EmployeeId == employeeId);
             }
 
-            var appointmentsFound = await appointmentsQuery.ToListAsync();
+            var appointmentsFound = await appointmentsQuery.OrderBy(x => x.ServiceSchedule.StartDate).ToListAsync();
 
             if ((appointmentsFound?.Count ?? 0) == 0)
                 return new List<EmployeeServiceAppointments>();
@@ -131,7 +131,6 @@ namespace COIS6980.AgendaLigera.Services
                 var serviceId = appointment.ServiceSchedule.ServiceId;
                 var customerName = appointment.ServiceRecipient.FirstName + " " + appointment.ServiceRecipient.LastName;
                 var startTime = appointment.ServiceSchedule.StartDate.ToString("hh:mm tt");
-                var endTime = appointment.ServiceSchedule.EndDate.ToString("hh:mm tt");
 
                 var repeatedEmployeeService = employeeServiceAppointments
                     .FirstOrDefault(x => x.EmployeeId == employeeId.Value
@@ -147,12 +146,12 @@ namespace COIS6980.AgendaLigera.Services
                     {
                         EmployeeId = employeeId.Value,
                         ServiceId = serviceId,
-                        ServiceTitle = serviceName + " por " + employeeName,
+                        ServiceTitle = serviceName + " (" + employeeName + ")",
                         Customers = new List<ServiceCustomer>()
                         {
                             new ServiceCustomer()
                             {
-                                ServiceCustomerDescription = customerName + " @ " + startTime + " - " + endTime
+                                ServiceCustomerDescription = startTime + " - " + customerName
                             }
                         }
                     });
@@ -161,7 +160,7 @@ namespace COIS6980.AgendaLigera.Services
                 {
                     repeatedEmployeeService.Customers.Add(new ServiceCustomer()
                     {
-                        ServiceCustomerDescription = customerName + " @ " + startTime + " - " + endTime
+                        ServiceCustomerDescription = startTime + " - " + customerName
                     });
                 }
             }
