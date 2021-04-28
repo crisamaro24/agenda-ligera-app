@@ -2,7 +2,7 @@
 
 <div class="row">
     <div class="col-xl-8">
-        <RadzenScheduler style="height: 768px;" @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
+        <RadzenScheduler style="height:740px;" @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
         Data=@calendarAppointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
         SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
             <RadzenDayView />
@@ -11,35 +11,35 @@
         </RadzenScheduler>
     </div>
     <div class="col-xl-4">
-        <h3>@displayedDate</h3>
+        <h1 style="font-weight:400;">@appointmentsDisplayTitle</h1>
         <hr />
 
         @if ((employeeAppointments?.Count ?? 0) > 0)
         {
-            <RadzenTree Data="@employeeAppointments">
+            <RadzenTree style="width: 100%;" Data="@employeeAppointments">
                 <RadzenTreeLevel TextProperty="ServiceTitle" ChildrenProperty="Customers" />
                 <RadzenTreeLevel TextProperty="ServiceCustomerDescription" HasChildren="@((customer) => false)" />
             </RadzenTree>
         }
         else
         {
-            <h3>No tiene ninguna cita hoy.</h3>
+            <p class="lead">@appointmentsDisplayMessage</p>
+            <a href="#">Crea una cita</a>
         }
     </div>
 </div>
 
 @code {
-    private string displayedDate;
+    private string appointmentsDisplayTitle;
+    private string appointmentsDisplayMessage;
     RadzenScheduler<AppointmentCalendarDetails> scheduler;
     IList<AppointmentCalendarDetails> calendarAppointments;
     IList<EmployeeServiceAppointments> employeeAppointments;
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        // Appointment details for current day
-        var today = DateTime.UtcNow.ToLocalTime().Date;
-        displayedDate = today.ToString("D", new CultureInfo("es-ES"));
-        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(today);
+        appointmentsDisplayTitle = "Saludos!";
+        appointmentsDisplayMessage = "Seleccione un día en el calendario para ver el listado de citas aquí.";
     }
 
     async Task OnLoadData(SchedulerLoadDataEventArgs args)
@@ -51,7 +51,8 @@
     async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
     {
         // Get employee appointments for selected date
-        displayedDate = args.Start.Date.ToString("D", new CultureInfo("es-ES"));
+        appointmentsDisplayTitle = args.Start.Date.ToString("D", new CultureInfo("es-ES"));
+        appointmentsDisplayMessage = "No tiene ninguna cita hoy.";
         employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(args.Start.Date);
     }
 
