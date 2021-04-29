@@ -3,6 +3,7 @@ using COIS6980.EFCoreDb.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,6 +23,7 @@ namespace COIS6980.AgendaLigera.Services
             int? employeeId = null,
             bool active = true,
             bool deleted = false);
+        Task<AppointmentDetails> GetAppointmentDetails(int appointmentId);
     }
     public class AppointmentService : IAppointmentService
     {
@@ -144,28 +146,47 @@ namespace COIS6980.AgendaLigera.Services
 
                     employeeServiceAppointments.Add(new EmployeeServiceAppointments()
                     {
-                        EmployeeId = employeeId.Value,
-                        ServiceId = serviceId,
                         ServiceTitle = serviceName + " (" + employeeName + ")",
                         Customers = new List<ServiceCustomer>()
                         {
                             new ServiceCustomer()
                             {
-                                ServiceCustomerDescription = startTime + " - " + customerName
+                                ServiceCustomerDescription = startTime + " - " + customerName,
+                                AppointmentId = appointment.AppointmentId,
+                                ServiceScheduleId = appointment.ServiceSchedule.ServiceScheduleId,
+                                ServiceRecipientId = appointment.ServiceRecipient.ServiceRecipientId
                             }
-                        }
+                        },
+                        ServiceId = serviceId,
+                        EmployeeId = employeeId.Value
                     });
                 }
                 else
                 {
                     repeatedEmployeeService.Customers.Add(new ServiceCustomer()
                     {
-                        ServiceCustomerDescription = startTime + " - " + customerName
+                        ServiceCustomerDescription = startTime + " - " + customerName,
+                        AppointmentId = appointment.AppointmentId,
+                        ServiceScheduleId = appointment.ServiceSchedule.ServiceScheduleId,
+                        ServiceRecipientId = appointment.ServiceRecipient.ServiceRecipientId
                     });
                 }
             }
 
             return employeeServiceAppointments;
+        }
+
+        public async Task<AppointmentDetails> GetAppointmentDetails(int appointmentId)
+        {
+            var today = DateTime.UtcNow.ToLocalTime();
+            return new AppointmentDetails()
+            {
+                FormattedDate = today.Date.ToString("D", new CultureInfo("es-ES")),
+                FormattedTime = today.ToString("hh:mm tt"),
+                ServiceName = "Colonoscopia",
+                ServiceRecipientName = "Mateo Del Valle",
+                ServiceProviderName = "Dra. Villanueva"
+            };
         }
     }
 }

@@ -1,0 +1,45 @@
+﻿@inject IAppointmentService _appointmentService
+@inject DialogService _dialogService
+
+@if (appointmentDetails == null)
+{
+    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" Style="margin-bottom: 20px" />
+}
+else
+{
+    <div class="row">
+        <div class="col-md-6">
+            <h3 class="mt-1 fw-400">Paciente</h3>
+            <p>@appointmentDetails.ServiceRecipientName</p>
+            <h3 class="fw-400">Servicio</h3>
+            <p>@appointmentDetails.ServiceName</p>
+        </div>
+        <div class="col-md-6">
+            <h3 class="fw-400">Horario</h3>
+            <p>@appointmentDetails.FormattedTime</p>
+            <h3 class="mt-1 fw-400">Doctora</h3>
+            <p>@appointmentDetails.ServiceProviderName</p>
+        </div>
+        <div class="col-12 text-center">
+            <button class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
+            <button @onclick="OnCancel" class="btn btn-outline-danger btn-sm" type="button">Cancelar</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int AppointmentId { get; set; }
+
+    AppointmentDetails appointmentDetails;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        appointmentDetails = await _appointmentService.GetAppointmentDetails(AppointmentId);
+    }
+
+    private void OnCancel()
+    {
+        _dialogService.Close();
+    }
+}
