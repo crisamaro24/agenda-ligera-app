@@ -59,9 +59,7 @@
 
     async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentCalendarDetails> args)
     {
-        var appointmentService = args.Data.Title;
-        var appointmentDate = args.Data.Start.Date.ToString("d");
-        await _dialogService.OpenAsync<AppointmentDetailsPage>(appointmentService + " (" + appointmentDate + ")", new Dictionary<string, object> { { "AppointmentId", args.Data.AppointmentId } });
+        await _dialogService.OpenAsync<AppointmentDetailsPage>("", new Dictionary<string, object> { { "AppointmentId", args.Data.AppointmentId } });
         await scheduler.Reload();
     }
 

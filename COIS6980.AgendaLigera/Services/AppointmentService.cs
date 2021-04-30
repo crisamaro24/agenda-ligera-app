@@ -24,6 +24,7 @@ namespace COIS6980.AgendaLigera.Services
             bool active = true,
             bool deleted = false);
         Task<AppointmentDetails> GetAppointmentDetails(int appointmentId);
+        Task CancelAppointment(int appointmentId);
     }
     public class AppointmentService : IAppointmentService
     {
@@ -106,7 +107,6 @@ namespace COIS6980.AgendaLigera.Services
         {
             var appointmentsQuery = _agendaLigeraCtx.Appointments
                 .Include(x => x.ServiceRecipient)
-                    .ThenInclude(x => x.User)
                 .Include(x => x.ServiceSchedule)
                     .ThenInclude(x => x.Service)
                     .ThenInclude(x => x.Employee)
@@ -178,15 +178,49 @@ namespace COIS6980.AgendaLigera.Services
 
         public async Task<AppointmentDetails> GetAppointmentDetails(int appointmentId)
         {
-            var today = DateTime.UtcNow.ToLocalTime();
+            var appointment = await _agendaLigeraCtx.Appointments
+                .Include(x => x.ServiceRecipient)
+                .Include(x => x.ServiceSchedule)
+                    .ThenInclude(x => x.Service)
+                    .ThenInclude(x => x.Employee)
+                .Where(x => x.AppointmentId == appointmentId)
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .FirstOrDefaultAsync();
+
+            if (appointment == null)
+                return new AppointmentDetails();
+
+            var appointmentCapacity = appointment.ServiceSchedule.Capacity;
+
+            var appointmentDate = appointment.ServiceSchedule.StartDate;
+            var appointmentTime = appointmentDate.ToString("hh:mm tt") +
+                ((appointmentCapacity ?? 0) == 1 ? (" - " + appointment.ServiceSchedule.EndDate.ToString("hh:mm tt")) : string.Empty);
+
+            var customerName = appointment.ServiceRecipient.FirstName + " " + appointment.ServiceRecipient.LastName;
+            var employeeName = appointment.ServiceSchedule.Service.Employee.FirstName + " " +
+                appointment.ServiceSchedule.Service.Employee.LastName;
+
             return new AppointmentDetails()
             {
-                FormattedDate = today.Date.ToString("D", new CultureInfo("es-ES")),
-                FormattedTime = today.ToString("hh:mm tt"),
-                ServiceName = "Colonoscopia",
-                ServiceRecipientName = "Mateo Del Valle",
-                ServiceProviderName = "Dra. Villanueva"
+                FormattedDate = appointmentDate.Date.ToString("D", new CultureInfo("es-ES")),
+                FormattedTime = appointmentTime,
+                ServiceName = appointment.ServiceSchedule.Service.Title,
+                ServiceRecipientName = customerName,
+                ServiceProviderName = employeeName
             };
+        }
+
+        public async Task CancelAppointment(int appointmentId)
+        {
+            var appointment = await _agendaLigeraCtx.Appointments
+                .FirstOrDefaultAsync(x => x.AppointmentId == appointmentId && x.IsActive == true && x.IsDeleted == false);
+
+            if (appointment != null)
+            {
+                appointment.IsActive = false;
+                _agendaLigeraCtx.Entry(appointment).State = EntityState.Modified;
+                await _agendaLigeraCtx.SaveChangesAsync();
+            }
         }
     }
 }

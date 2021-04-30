@@ -1,28 +1,38 @@
 ﻿@inject IAppointmentService _appointmentService
 @inject DialogService _dialogService
 
-@if (appointmentDetails == null)
+@if(CancelDecision == false)
 {
-    <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" Style="margin-bottom: 20px" />
+    <div class="row">
+        <div class="col-md-6">
+            <b class="mt-1">Paciente</b>
+            <h3 class="fw-400">@appointmentDetails?.ServiceRecipientName</h3>
+            <b class="mt-1">Servicio</b>
+            <h3 class="fw-400">@appointmentDetails?.ServiceName</h3>
+            <b class="mt-1">Doctora</b>
+            <h3 class="fw-400">@appointmentDetails?.ServiceProviderName</h3>
+        </div>
+        <div class="col-md-6">
+            <b class="mt-1">Fecha</b>
+            <h3 class="fw-400">@appointmentDetails?.FormattedDate</h3>
+            <b class="mt-1">Horario</b>
+            <h3 class="fw-400">@appointmentDetails?.FormattedTime</h3>
+        </div>
+        <div class="col-12 text-center">
+            <button class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
+            <button @onclick="ToggleCancelDecision" class="btn btn-outline-danger btn-sm" type="button">Cancelar cita</button>
+        </div>
+    </div>
 }
 else
 {
     <div class="row">
         <div class="col-md-6">
-            <h3 class="mt-1 fw-400">Paciente</h3>
-            <p>@appointmentDetails.ServiceRecipientName</p>
-            <h3 class="fw-400">Servicio</h3>
-            <p>@appointmentDetails.ServiceName</p>
+            <h2 class="fw-400">¿Estás segura de que quieres cancelar la cita?</h2>
         </div>
-        <div class="col-md-6">
-            <h3 class="fw-400">Horario</h3>
-            <p>@appointmentDetails.FormattedTime</p>
-            <h3 class="mt-1 fw-400">Doctora</h3>
-            <p>@appointmentDetails.ServiceProviderName</p>
-        </div>
-        <div class="col-12 text-center">
-            <button class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
-            <button @onclick="OnCancel" class="btn btn-outline-danger btn-sm" type="button">Cancelar</button>
+        <div class="col-md-6 text-center">
+            <button @onclick="CancelAppointment" class="btn btn-outline-danger btn-sm" type="button">Estoy segura</button>
+            <button @onclick="ToggleCancelDecision" class="btn btn-outline-info btn-sm" type="button">Llévame de vuelta</button>
         </div>
     </div>
 }
@@ -30,16 +40,29 @@ else
 @code {
     [Parameter]
     public int AppointmentId { get; set; }
-
+    
     AppointmentDetails appointmentDetails;
+
+    private bool CancelDecision;
+
+    protected override void OnInitialized()
+    {
+        CancelDecision = false;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
         appointmentDetails = await _appointmentService.GetAppointmentDetails(AppointmentId);
     }
 
-    private void OnCancel()
+    private void ToggleCancelDecision()
     {
+        CancelDecision = !CancelDecision;
+    }
+
+    private async Task CancelAppointment()
+    {
+        await _appointmentService.CancelAppointment(AppointmentId);
         _dialogService.Close();
     }
 }
