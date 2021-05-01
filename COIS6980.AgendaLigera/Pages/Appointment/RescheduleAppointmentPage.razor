@@ -1,9 +1,11 @@
-﻿<div class="row">
-    <div class="col-lg-6">
+﻿@inject IAppointmentService _appointmentService
+
+<div class="row">
+    <div class="col-lg-8">
         <b class="mt-1">Para cuando?</b>
-        <RadzenDatePicker TValue="DateTime?" Inline="true" DateRender=@OnDateRender />
+        <RadzenDatePicker TValue="DateTime?" Inline="true" DateRender=@OnDateRender Change=@OnDateChange />
     </div>
-    <div class="col-lg-6">
+    <div class="col-lg-4">
         <b class="mt-1">Servicio</b>
         <h3 class="fw-400">@AppointmentDetails?.ServiceName</h3>
         <b class="mt-1">Doctora</b>
@@ -27,8 +29,45 @@
     [Parameter]
     public EventCallback ToggleStatus { get; set; }
 
+    private DateTime selectedCalendarDate;
+
+    private List<ServiceScheduleDetails> availableAppointments = new List<ServiceScheduleDetails>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        selectedCalendarDate = DateTime.UtcNow.ToLocalTime().Date;
+        var firstDayOfMonth = new DateTime(selectedCalendarDate.Year, selectedCalendarDate.Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+        availableAppointments = await _appointmentService
+            .GetAvailableServiceAppointmentsBetweenDates(AppointmentDetails.ServiceId, firstDayOfMonth, lastDayOfMonth);
+    }
+
     private void OnDateRender(DateRenderEventArgs args)
     {
-        
+        var availableAppointmentDates = availableAppointments.Select(x => x.StartDate.Date).ToList();
+        if (availableAppointmentDates.Contains(args.Date))
+        {
+            args.Attributes.Add("style", "background-color: #17a2b8; color: #ffffff;");
+        }
+    }
+
+    private async Task OnDateChange(DateTime? date)
+    {
+        if (date != null)
+        {
+            var newSelectedDate = date.GetValueOrDefault();
+
+            if (newSelectedDate.Month != selectedCalendarDate.Month || newSelectedDate.Year != selectedCalendarDate.Year)
+            {
+                var firstDayOfMonth = new DateTime(newSelectedDate.Year, newSelectedDate.Month, 1);
+                var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+                availableAppointments = await _appointmentService
+                    .GetAvailableServiceAppointmentsBetweenDates(AppointmentDetails.ServiceId, firstDayOfMonth, lastDayOfMonth);
+            }
+
+            selectedCalendarDate = newSelectedDate;
+        }
     }
 }

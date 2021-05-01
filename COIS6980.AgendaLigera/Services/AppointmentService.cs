@@ -25,6 +25,7 @@ namespace COIS6980.AgendaLigera.Services
             bool deleted = false);
         Task<AppointmentDetails> GetAppointmentDetails(int appointmentId);
         Task CancelAppointment(int appointmentId);
+        Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsBetweenDates(int serviceId, DateTime startDate, DateTime endDate);
     }
     public class AppointmentService : IAppointmentService
     {
@@ -204,6 +205,7 @@ namespace COIS6980.AgendaLigera.Services
             {
                 FormattedDate = appointmentDate.Date.ToString("D", new CultureInfo("es-ES")),
                 FormattedTime = appointmentTime,
+                ServiceId = appointment.ServiceSchedule.ServiceId,
                 ServiceName = appointment.ServiceSchedule.Service.Title,
                 ServiceRecipientName = customerName,
                 ServiceProviderName = employeeName
@@ -223,14 +225,44 @@ namespace COIS6980.AgendaLigera.Services
             }
         }
 
-        public async Task<List<DateTime>> GetAvailableServiceAppointmentDates(int serviceId)
+        public async Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsBetweenDates(int serviceId, DateTime startDate, DateTime endDate)
         {
-            throw new NotImplementedException();
-        }
+            var today = DateTime.UtcNow.ToLocalTime();
 
-        public async Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointments(int serviceId, DateTime date)
-        {
-            throw new NotImplementedException();
+            var scheduledAppointments = await _agendaLigeraCtx.Appointments
+                .Include(x => x.ServiceRecipient)
+                .Include(x => x.ServiceSchedule)
+                    .ThenInclude(x => x.Service)
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.ServiceSchedule.ServiceId == serviceId)
+                .Where(x => x.ServiceSchedule.StartDate > today)
+                .Where(x => x.ServiceSchedule.StartDate.Date >= startDate.Date)
+                .Where(x => x.ServiceSchedule.EndDate.Date <= endDate.Date)
+                .ToListAsync();
+
+            var futureServiceSchedules = await _agendaLigeraCtx.ServiceSchedules
+                .Include(x => x.Service)
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.ServiceId == serviceId)
+                .Where(x => x.StartDate > today)
+                .Where(x => x.StartDate.Date >= startDate.Date)
+                .Where(x => x.EndDate.Date <= endDate.Date)
+                .ToListAsync();
+
+            var availableServiceSchedules = futureServiceSchedules
+                .Where(x => x.Capacity == null || x.Capacity > scheduledAppointments.Where(y => y.ServiceScheduleId == x.ServiceScheduleId).Count())
+                .ToList();
+
+            var availableServiceAppointments = availableServiceSchedules
+                .Select(x => new ServiceScheduleDetails()
+                {
+                    ServiceScheduleId = x.ServiceScheduleId,
+                    StartDate = x.StartDate,
+                    EndDate = x.EndDate,
+                    Capacity = x.Capacity
+                }).ToList();
+
+            return availableServiceAppointments;
         }
 
         public async Task RescheduleAppointment(int appointmentId, int newAppointmentServiceScheduleId)

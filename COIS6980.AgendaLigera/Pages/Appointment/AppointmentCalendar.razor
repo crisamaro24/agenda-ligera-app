@@ -67,9 +67,7 @@
     private async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentCalendarDetails> args)
     {
         // Show appointment details in a modal
-        await _dialogService.OpenAsync<AppointmentDetailsPage>("",
-            new Dictionary<string, object> { { "AppointmentId", args.Data.AppointmentId } },
-            new DialogOptions() { Width = "700px" });
+        await _dialogService.OpenAsync<AppointmentDetailsPage>("", new Dictionary<string, object> { { "AppointmentId", args.Data.AppointmentId } });
         await scheduler.Reload();
     }
 
@@ -88,9 +86,7 @@
     private async Task OnServiceCustomerSelect(ServiceCustomer serviceCustomer)
     {
         // Show appointment details in a modal
-        await _dialogService.OpenAsync<AppointmentDetailsPage>("",
-            new Dictionary<string, object> { { "AppointmentId", serviceCustomer.AppointmentId } },
-            new DialogOptions() { Width = "700px" });
+        await _dialogService.OpenAsync<AppointmentDetailsPage>("", new Dictionary<string, object> { { "AppointmentId", serviceCustomer.AppointmentId } });
         await scheduler.Reload();
         employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate);
     }
