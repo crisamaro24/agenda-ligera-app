@@ -222,5 +222,20 @@ namespace COIS6980.AgendaLigera.Services
                 await _agendaLigeraCtx.SaveChangesAsync();
             }
         }
+
+        public async Task<List<DateTime>> GetAvailableServiceAppointmentDates(int serviceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointments(int serviceId, DateTime date)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task RescheduleAppointment(int appointmentId, int newAppointmentServiceScheduleId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,0 +1,34 @@
+﻿<div class="row">
+    <div class="col-lg-6">
+        <b class="mt-1">Para cuando?</b>
+        <RadzenDatePicker TValue="DateTime?" Inline="true" DateRender=@OnDateRender />
+    </div>
+    <div class="col-lg-6">
+        <b class="mt-1">Servicio</b>
+        <h3 class="fw-400">@AppointmentDetails?.ServiceName</h3>
+        <b class="mt-1">Doctora</b>
+        <h3 class="fw-400">@AppointmentDetails?.ServiceProviderName</h3>
+        <b class="mt-1">Citas disponibles</b>
+        <select></select>
+    </div>
+    <div class="col-12 text-center">
+        <button class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
+        <button @onclick="async () => await ToggleStatus.InvokeAsync()" class="btn btn-outline-secondary btn-sm" type="button">Llévame de vuelta</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int AppointmentId { get; set; }
+
+    [Parameter]
+    public AppointmentDetails AppointmentDetails { get; set; }
+
+    [Parameter]
+    public EventCallback ToggleStatus { get; set; }
+
+    private void OnDateRender(DateRenderEventArgs args)
+    {
+        
+    }
+}

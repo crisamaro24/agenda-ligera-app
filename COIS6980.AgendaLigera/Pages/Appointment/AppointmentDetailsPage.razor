@@ -1,7 +1,7 @@
 ﻿@inject IAppointmentService _appointmentService
 @inject DialogService _dialogService
 
-@if(CancelDecision == false)
+@if (cancelAppointmentStatus == false && rescheduleAppointmentStatus == false)
 {
     <div class="row">
         <div class="col-md-6">
@@ -19,12 +19,16 @@
             <h3 class="fw-400">@appointmentDetails?.FormattedTime</h3>
         </div>
         <div class="col-12 text-center">
-            <button class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
-            <button @onclick="ToggleCancelDecision" class="btn btn-outline-danger btn-sm" type="button">Cancelar cita</button>
+            <button @onclick="ToggleRescheduleAppointmentStatus" class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
+            <button @onclick="ToggleCancelAppointmentStatus" class="btn btn-outline-danger btn-sm" type="button">Cancelar cita</button>
         </div>
     </div>
 }
-else
+else if (rescheduleAppointmentStatus == true)
+{
+    <RescheduleAppointmentPage AppointmentId=@AppointmentId AppointmentDetails=@appointmentDetails ToggleStatus=@ToggleRescheduleAppointmentStatus></RescheduleAppointmentPage>
+}
+else if (cancelAppointmentStatus == true)
 {
     <div class="row">
         <div class="col-md-6">
@@ -32,7 +36,7 @@ else
         </div>
         <div class="col-md-6 text-center">
             <button @onclick="CancelAppointment" class="btn btn-outline-danger btn-sm" type="button">Estoy segura</button>
-            <button @onclick="ToggleCancelDecision" class="btn btn-outline-info btn-sm" type="button">Llévame de vuelta</button>
+            <button @onclick="ToggleCancelAppointmentStatus" class="btn btn-outline-secondary btn-sm" type="button">Llévame de vuelta</button>
         </div>
     </div>
 }
@@ -40,14 +44,15 @@ else
 @code {
     [Parameter]
     public int AppointmentId { get; set; }
-    
-    private AppointmentDetails appointmentDetails;
 
-    private bool CancelDecision;
+    private bool cancelAppointmentStatus;
+    public bool rescheduleAppointmentStatus;
+    private AppointmentDetails appointmentDetails;
 
     protected override void OnInitialized()
     {
-        CancelDecision = false;
+        cancelAppointmentStatus = false;
+        rescheduleAppointmentStatus = false;
     }
 
     protected override async Task OnParametersSetAsync()
@@ -55,9 +60,14 @@ else
         appointmentDetails = await _appointmentService.GetAppointmentDetails(AppointmentId);
     }
 
-    private void ToggleCancelDecision()
+    private void ToggleRescheduleAppointmentStatus()
     {
-        CancelDecision = !CancelDecision;
+        rescheduleAppointmentStatus = !rescheduleAppointmentStatus;
+    }
+
+    private void ToggleCancelAppointmentStatus()
+    {
+        cancelAppointmentStatus = !cancelAppointmentStatus;
     }
 
     private async Task CancelAppointment()
