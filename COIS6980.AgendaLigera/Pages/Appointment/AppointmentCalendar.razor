@@ -19,7 +19,11 @@
         {
             <RadzenTree style="width: 100%;" Data="@employeeAppointments">
                 <RadzenTreeLevel TextProperty="ServiceTitle" ChildrenProperty="Customers" />
-                <RadzenTreeLevel TextProperty="ServiceCustomerDescription" HasChildren="@((customer) => false)" />
+                <RadzenTreeLevel TextProperty="ServiceCustomerDescription" HasChildren="@((customer) => false)">
+                    <Template>
+                        <span @onclick="() => OnServiceCustomerSelect(context.Value as ServiceCustomer)">@((context.Value as ServiceCustomer).ServiceCustomerDescription)</span>
+                    </Template>
+                </RadzenTreeLevel>
             </RadzenTree>
         }
         else
@@ -31,39 +35,42 @@
 </div>
 
 @code {
+    private DateTime selectedDate;
     private string appointmentsDisplayTitle;
     private string appointmentsDisplayMessage;
-    RadzenScheduler<AppointmentCalendarDetails> scheduler;
-    IList<AppointmentCalendarDetails> calendarAppointments;
-    IList<EmployeeServiceAppointments> employeeAppointments;
+    private RadzenScheduler<AppointmentCalendarDetails> scheduler;
+    private IList<AppointmentCalendarDetails> calendarAppointments;
+    private IList<EmployeeServiceAppointments> employeeAppointments;
 
     protected override async Task OnInitializedAsync()
     {
-        appointmentsDisplayTitle = "Saludos!";
+        appointmentsDisplayTitle = selectedDate.ToString("D", new CultureInfo("es-ES"));
         appointmentsDisplayMessage = "Seleccione un día en el calendario para ver el listado de citas aquí.";
     }
 
-    async Task OnLoadData(SchedulerLoadDataEventArgs args)
+    private async Task OnLoadData(SchedulerLoadDataEventArgs args)
     {
         // Populate calendar
         calendarAppointments = await _appointmentService.GetAppointmentsBetweenDates(args.Start, args.End);
     }
 
-    async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
+    private async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
     {
         // Get employee appointments for selected date
-        appointmentsDisplayTitle = args.Start.Date.ToString("D", new CultureInfo("es-ES"));
+        selectedDate = args.Start.Date;
+        appointmentsDisplayTitle = selectedDate.ToString("D", new CultureInfo("es-ES"));
         appointmentsDisplayMessage = "No tiene ninguna cita hoy.";
-        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(args.Start.Date);
+        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate);
     }
 
-    async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentCalendarDetails> args)
+    private async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentCalendarDetails> args)
     {
+        // Show appointment details in a modal
         await _dialogService.OpenAsync<AppointmentDetailsPage>("", new Dictionary<string, object> { { "AppointmentId", args.Data.AppointmentId } });
         await scheduler.Reload();
     }
 
-    void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<AppointmentCalendarDetails> args)
+    private void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<AppointmentCalendarDetails> args)
     {
         var currentTime = DateTime.UtcNow.ToLocalTime();
         if (args.Data.End < currentTime)
@@ -73,5 +80,13 @@
         {
             args.Attributes["style"] = "background: #17a2b8";
         }
+    }
+
+    private async Task OnServiceCustomerSelect(ServiceCustomer serviceCustomer)
+    {
+        // Show appointment details in a modal
+        await _dialogService.OpenAsync<AppointmentDetailsPage>("", new Dictionary<string, object> { { "AppointmentId", serviceCustomer.AppointmentId } });
+        await scheduler.Reload();
+        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate);
     }
 }
