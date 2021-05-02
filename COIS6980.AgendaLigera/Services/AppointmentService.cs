@@ -203,9 +203,11 @@ namespace COIS6980.AgendaLigera.Services
 
             return new AppointmentDetails()
             {
+                ServiceId = appointment.ServiceSchedule.ServiceId,
+                StartDate = appointmentDate,
+                EndDate = appointment.ServiceSchedule.EndDate,
                 FormattedDate = appointmentDate.Date.ToString("D", new CultureInfo("es-ES")),
                 FormattedTime = appointmentTime,
-                ServiceId = appointment.ServiceSchedule.ServiceId,
                 ServiceName = appointment.ServiceSchedule.Service.Title,
                 ServiceRecipientName = customerName,
                 ServiceProviderName = employeeName
@@ -257,6 +259,7 @@ namespace COIS6980.AgendaLigera.Services
                 .Select(x => new ServiceScheduleDetails()
                 {
                     ServiceScheduleId = x.ServiceScheduleId,
+                    FormattedTime = x.StartDate.ToString("hh:mm tt") + ((x.Capacity ?? 0) == 1 ? (" - " + x.EndDate.ToString("hh:mm tt")) : string.Empty),
                     StartDate = x.StartDate,
                     EndDate = x.EndDate,
                     Capacity = x.Capacity

@@ -1,17 +1,22 @@
 ﻿@inject IAppointmentService _appointmentService
 
 <div class="row">
-    <div class="col-lg-8">
-        <b class="mt-1">Para cuando?</b>
+    <div class="col-lg-7">
+        <b>Para cuando?</b>
         <RadzenDatePicker TValue="DateTime?" Inline="true" DateRender=@OnDateRender Change=@OnDateChange />
     </div>
-    <div class="col-lg-4">
-        <b class="mt-1">Servicio</b>
+    <div class="col-lg-5">
+        <b>Servicio</b>
         <h3 class="fw-400">@AppointmentDetails?.ServiceName</h3>
-        <b class="mt-1">Doctora</b>
+        <b>Doctora</b>
         <h3 class="fw-400">@AppointmentDetails?.ServiceProviderName</h3>
-        <b class="mt-1">Citas disponibles</b>
-        <select></select>
+        <b>Fecha seleccionada</b>
+        <h3 class="fw-400">@selectedCalendarDate.Date.ToString("D", new CultureInfo("es-ES"))</h3>
+        <b>Citas disponibles</b>
+        <RadzenDropDown Placeholder="Seleccione..." AllowClear="false" TValue="int" TextProperty="FormattedTime"
+                        ValueProperty="ServiceScheduleId" Disabled=@DisabledDropDown
+                        Data=@(availableAppointments.Where(x => x.StartDate.Date == selectedCalendarDate))
+                        Change=@OnDropDownChange />
     </div>
     <div class="col-12 text-center">
         <button class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
@@ -29,8 +34,8 @@
     [Parameter]
     public EventCallback ToggleStatus { get; set; }
 
+    private bool DisabledDropDown = true;
     private DateTime selectedCalendarDate;
-
     private List<ServiceScheduleDetails> availableAppointments = new List<ServiceScheduleDetails>();
 
     protected override async Task OnParametersSetAsync()
@@ -41,6 +46,8 @@
 
         availableAppointments = await _appointmentService
             .GetAvailableServiceAppointmentsBetweenDates(AppointmentDetails.ServiceId, firstDayOfMonth, lastDayOfMonth);
+
+        DisabledDropDown = !(availableAppointments.Where(x => x.StartDate.Date == selectedCalendarDate).Count() > 0);
     }
 
     private void OnDateRender(DateRenderEventArgs args)
@@ -48,7 +55,7 @@
         var availableAppointmentDates = availableAppointments.Select(x => x.StartDate.Date).ToList();
         if (availableAppointmentDates.Contains(args.Date))
         {
-            args.Attributes.Add("style", "background-color: #17a2b8; color: #ffffff;");
+            args.Attributes.Add("style", "background-color: #8ff0ff;");
         }
     }
 
@@ -68,6 +75,12 @@
             }
 
             selectedCalendarDate = newSelectedDate;
+            DisabledDropDown = !(availableAppointments.Where(x => x.StartDate.Date == selectedCalendarDate).Count() > 0);
         }
+    }
+
+    private void OnDropDownChange(object selection)
+    {
+        var selectedItem = selection;
     }
 }
