@@ -49,15 +49,13 @@ else if (cancelAppointmentStatus == true)
     public int AppointmentId { get; set; }
 
     private DateTime currentTime;
-    private bool cancelAppointmentStatus;
-    public bool rescheduleAppointmentStatus;
+    private bool cancelAppointmentStatus = false;
+    public bool rescheduleAppointmentStatus = false;
     private AppointmentDetails appointmentDetails;
 
     protected override void OnInitialized()
     {
         currentTime = DateTime.UtcNow.ToLocalTime();
-        cancelAppointmentStatus = false;
-        rescheduleAppointmentStatus = false;
     }
 
     protected override async Task OnParametersSetAsync()

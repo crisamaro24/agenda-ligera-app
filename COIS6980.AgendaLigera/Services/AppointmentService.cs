@@ -259,6 +259,7 @@ namespace COIS6980.AgendaLigera.Services
                 .Select(x => new ServiceScheduleDetails()
                 {
                     ServiceScheduleId = x.ServiceScheduleId,
+                    FormattedDate = x.StartDate.Date.ToString("D", new CultureInfo("es-ES")),
                     FormattedTime = x.StartDate.ToString("hh:mm tt") + ((x.Capacity ?? 0) == 1 ? (" - " + x.EndDate.ToString("hh:mm tt")) : string.Empty),
                     StartDate = x.StartDate,
                     EndDate = x.EndDate,
