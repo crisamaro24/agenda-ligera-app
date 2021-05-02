@@ -5,14 +5,10 @@
 {
     <div class="row">
         <div class="col-lg-7">
-            <b>Para cuando desea reprogramar la cita?</b>
+            <h3 class="fw-400">Para cuando desea reprogramar la cita?</h3>
             <RadzenDatePicker TValue="DateTime?" Inline="true" DateRender=@OnDateRender Change=@OnDateChange />
         </div>
         <div class="col-lg-5">
-            <b>Servicio</b>
-            <h3 class="fw-400">@AppointmentDetails?.ServiceName</h3>
-            <b>Doctora</b>
-            <h3 class="fw-400">@AppointmentDetails?.ServiceProviderName</h3>
             <b>Fecha seleccionada</b>
             <h3 class="fw-400">@selectedCalendarDate.Date.ToString("D", new CultureInfo("es-ES"))</h3>
             <b>Citas disponibles</b>
@@ -21,7 +17,7 @@
                         Data=@(availableAppointments.Where(x => x.StartDate.Date == selectedCalendarDate))
                         @bind-Value=@selectedServiceScheduleId />
         </div>
-        <div class="col-12 text-center">
+        <div class="col-12 mt-3 text-center">
             <button @onclick="StartRescheduleFlow" disabled="@(selectedServiceScheduleId == 0)" class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
             <button @onclick="async () => await ToggleStatus.InvokeAsync()" class="btn btn-outline-secondary btn-sm" type="button">Llévame de vuelta</button>
         </div>
@@ -30,7 +26,7 @@
 else
 {
     <div class="row">
-        <div class="col-12">
+        <div class="col-12 mb-4">
             <h2 class="fw-400">¿Estás segura de que quieres reprogramar la cita?</h2>
         </div>
         <br />
@@ -47,7 +43,7 @@ else
             <h3 class="fw-400">@newAppointmentTime</h3>
         </div>
         <br />
-        <div class="col-12 text-center">
+        <div class="col-12 mt-4 text-center">
             <button @onclick="RescheduleAppointment" class="btn btn-outline-danger btn-sm" type="button">Estoy segura</button>
             <button @onclick="ToggleRescheduleStatus" class="btn btn-outline-secondary btn-sm" type="button">Llévame de vuelta</button>
         </div>
@@ -130,6 +126,7 @@ else
 
     private async Task RescheduleAppointment()
     {
+        await _appointmentService.RescheduleAppointment(AppointmentId, selectedServiceScheduleId);
         _dialogService.Close();
     }
 }

@@ -20,7 +20,7 @@
         </div>
         @if (appointmentDetails?.EndDate > currentTime)
         {
-            <div class="col-12 text-center">
+            <div class="col-12 mt-3 text-center">
                 <button @onclick="ToggleRescheduleAppointmentStatus" class="btn btn-outline-info btn-sm" type="button">Reprogramar</button>
                 <button @onclick="ToggleCancelAppointmentStatus" class="btn btn-outline-danger btn-sm" type="button">Cancelar cita</button>
             </div>
@@ -37,7 +37,7 @@ else if (cancelAppointmentStatus == true)
         <div class="col-md-6">
             <h2 class="fw-400">¿Estás segura de que quieres cancelar la cita?</h2>
         </div>
-        <div class="col-md-6 text-center">
+        <div class="col-md-6 mt-3 text-center">
             <button @onclick="CancelAppointment" class="btn btn-outline-danger btn-sm" type="button">Estoy segura</button>
             <button @onclick="ToggleCancelAppointmentStatus" class="btn btn-outline-secondary btn-sm" type="button">Llévame de vuelta</button>
         </div>

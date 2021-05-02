@@ -26,6 +26,7 @@ namespace COIS6980.AgendaLigera.Services
         Task<AppointmentDetails> GetAppointmentDetails(int appointmentId);
         Task CancelAppointment(int appointmentId);
         Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsBetweenDates(int serviceId, DateTime startDate, DateTime endDate);
+        Task RescheduleAppointment(int appointmentId, int newServiceScheduleId);
     }
     public class AppointmentService : IAppointmentService
     {
@@ -269,9 +270,17 @@ namespace COIS6980.AgendaLigera.Services
             return availableServiceAppointments;
         }
 
-        public async Task RescheduleAppointment(int appointmentId, int newAppointmentServiceScheduleId)
+        public async Task RescheduleAppointment(int appointmentId, int newServiceScheduleId)
         {
-            throw new NotImplementedException();
+            var appointment = await _agendaLigeraCtx.Appointments
+                .FirstOrDefaultAsync(x => x.AppointmentId == appointmentId && x.IsActive == true && x.IsDeleted == false);
+
+            if (appointment != null)
+            {
+                appointment.ServiceScheduleId = newServiceScheduleId;
+                _agendaLigeraCtx.Entry(appointment).State = EntityState.Modified;
+                await _agendaLigeraCtx.SaveChangesAsync();
+            }
         }
     }
 }
