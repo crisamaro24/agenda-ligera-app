@@ -27,6 +27,11 @@ namespace COIS6980.AgendaLigera.Services
         Task CancelAppointment(int appointmentId);
         Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsBetweenDates(int serviceId, DateTime startDate, DateTime endDate);
         Task RescheduleAppointment(int appointmentId, int newServiceScheduleId);
+        Task<List<AppointmentDetails>> GetAppointmentDetailsListByDate(
+            DateTime date,
+            string userId = null,
+            bool active = true,
+            bool deleted = false);
     }
     public class AppointmentService : IAppointmentService
     {
@@ -199,11 +204,11 @@ namespace COIS6980.AgendaLigera.Services
                 ((appointmentCapacity ?? 0) == 1 ? (" - " + appointment.ServiceSchedule.EndDate.ToString("hh:mm tt")) : string.Empty);
 
             var customerName = appointment.ServiceRecipient.FirstName + " " + appointment.ServiceRecipient.LastName;
-            var employeeName = appointment.ServiceSchedule.Service.Employee.FirstName + " " +
-                appointment.ServiceSchedule.Service.Employee.LastName;
+            var employeeName = appointment.ServiceSchedule.Service.Employee.FirstName + " " + appointment.ServiceSchedule.Service.Employee.LastName;
 
             return new AppointmentDetails()
             {
+                AppointmentId = appointmentId,
                 ServiceId = appointment.ServiceSchedule.ServiceId,
                 StartDate = appointmentDate,
                 EndDate = appointment.ServiceSchedule.EndDate,
@@ -250,6 +255,7 @@ namespace COIS6980.AgendaLigera.Services
                 .Where(x => x.StartDate > today)
                 .Where(x => x.StartDate.Date >= startDate.Date)
                 .Where(x => x.EndDate.Date <= endDate.Date)
+                .OrderBy(x => x.StartDate)
                 .ToListAsync();
 
             var availableServiceSchedules = futureServiceSchedules
@@ -281,6 +287,69 @@ namespace COIS6980.AgendaLigera.Services
                 _agendaLigeraCtx.Entry(appointment).State = EntityState.Modified;
                 await _agendaLigeraCtx.SaveChangesAsync();
             }
+        }
+
+        public async Task<List<AppointmentDetails>> GetAppointmentDetailsListByDate(
+            DateTime date,
+            string userId = null,
+            bool active = true,
+            bool deleted = false)
+        {
+            var appointmentsQuery = _agendaLigeraCtx.Appointments
+                .Include(x => x.ServiceRecipient)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.ServiceSchedule)
+                    .ThenInclude(x => x.Service)
+                    .ThenInclude(x => x.Employee)
+                .Where(x => x.IsActive == active && x.IsDeleted == deleted)
+                .Where(x => x.ServiceSchedule.StartDate.Date == date.Date);
+
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var userRole = await _agendaLigeraCtx.AspNetUserRoles
+                    .Include(x => x.Role)
+                    .Where(x => x.UserId == userId)
+                    .Select(x => x.Role.Name)
+                    .FirstOrDefaultAsync();
+
+                if (string.IsNullOrWhiteSpace(userRole))
+                    return new List<AppointmentDetails>();
+
+                switch (userRole.ToLowerInvariant())
+                {
+                    case "paciente":
+                        appointmentsQuery = appointmentsQuery
+                            .Where(x => x.ServiceRecipient.User.Id == userId);
+                        break;
+                    case "doctora":
+                        appointmentsQuery = appointmentsQuery
+                            .Where(x => x.ServiceSchedule.Service.Employee.User.Id == userId);
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            var appointmentsFound = await appointmentsQuery.OrderBy(x => x.ServiceSchedule.StartDate).ToListAsync();
+
+            if ((appointmentsFound?.Count ?? 0) == 0)
+                return new List<AppointmentDetails>();
+
+            var appointments = appointmentsFound
+                .Select(x => new AppointmentDetails()
+                {
+                    AppointmentId = x.AppointmentId,
+                    ServiceId = x.ServiceSchedule.ServiceId,
+                    StartDate = x.ServiceSchedule.StartDate,
+                    EndDate = x.ServiceSchedule.EndDate,
+                    FormattedDate = x.ServiceSchedule.StartDate.Date.ToString("D", new CultureInfo("es-ES")),
+                    FormattedTime = x.ServiceSchedule.StartDate.ToString("hh:mm tt"),
+                    ServiceName = x.ServiceSchedule.Service.Title,
+                    ServiceRecipientName = x.ServiceRecipient.FirstName + " " + x.ServiceRecipient.LastName,
+                    ServiceProviderName = x.ServiceSchedule.Service.Employee.FirstName + " " + x.ServiceSchedule.Service.Employee.LastName
+                }).ToList();
+
+            return appointments;
         }
     }
 }

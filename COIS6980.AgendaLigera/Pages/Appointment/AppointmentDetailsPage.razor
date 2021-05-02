@@ -5,18 +5,18 @@
 {
     <div class="row">
         <div class="col-md-6">
-            <b>Paciente</b>
-            <h3 class="fw-400">@appointmentDetails?.ServiceRecipientName</h3>
-            <b>Servicio</b>
-            <h3 class="fw-400">@appointmentDetails?.ServiceName</h3>
             <b>Doctora</b>
             <h3 class="fw-400">@appointmentDetails?.ServiceProviderName</h3>
-        </div>
-        <div class="col-md-6">
-            <b>Fecha</b>
-            <h3 class="fw-400">@appointmentDetails?.FormattedDate</h3>
+            <b>Servicio</b>
+            <h3 class="fw-400">@appointmentDetails?.ServiceName</h3>
             <b>Horario</b>
             <h3 class="fw-400">@appointmentDetails?.FormattedTime</h3>
+        </div>
+        <div class="col-md-6">
+            <b>Paciente</b>
+            <h3 class="fw-400">@appointmentDetails?.ServiceRecipientName</h3>
+            <b>Fecha</b>
+            <h3 class="fw-400">@appointmentDetails?.FormattedDate</h3>
         </div>
         @if (appointmentDetails?.EndDate > currentTime)
         {

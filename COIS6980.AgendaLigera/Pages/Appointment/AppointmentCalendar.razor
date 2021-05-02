@@ -12,7 +12,7 @@
         </RadzenScheduler>
     </div>
     <div class="col-lg-4">
-        <h1 class="fw-400">@appointmentsDisplayTitle</h1>
+        <h2 class="fw-400">@appointmentsDisplayTitle</h2>
         <hr />
 
         @if ((employeeAppointments?.Count ?? 0) > 0)
@@ -29,7 +29,6 @@
         else
         {
             <p class="lead">@appointmentsDisplayMessage</p>
-            <a href="#">Crea una cita</a>
         }
     </div>
 </div>
@@ -60,7 +59,7 @@
         // Get employee appointments for selected date
         selectedDate = args.Start.Date;
         appointmentsDisplayTitle = selectedDate.ToString("D", new CultureInfo("es-ES"));
-        appointmentsDisplayMessage = "No tiene ninguna cita hoy.";
+        appointmentsDisplayMessage = "¡Disfruta tu día! No tiene ninguna cita hoy.";
         employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate);
     }
 
