@@ -8,7 +8,7 @@
         <h1 class="fw-400">Citas programadas</h1>
         @if ((appointmentsForSelectedDate?.Count ?? 0) > 0)
         {
-            <RadzenDataList WrapItems="true" AllowPaging="true" Data="@appointmentsForSelectedDate" TItem="AppointmentDetails">
+            <RadzenDataList WrapItems="true" AllowPaging="true" Data=@appointmentsForSelectedDate TItem="AppointmentDetails">
                 <Template Context="appointment">
                     <div class="row">
                         <div class="col-lg-5">
@@ -25,9 +25,12 @@
                             <b>Fecha</b>
                             <h3 class="fw-400">@appointment.FormattedDate</h3>
                         </div>
-                        <div class="col-lg-2 mt-4">
-                            <button @onclick="() => ManageAppointment(appointment.AppointmentId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
-                        </div>
+                        @if (appointment.EndDate > currentTime)
+                        {
+                            <div class="col-lg-2 mt-4">
+                                <button @onclick="() => ManageAppointment(appointment.AppointmentId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
+                            </div>
+                        }
                     </div>
                 </Template>
             </RadzenDataList>
@@ -41,33 +44,41 @@
         <h2 class="fw-400">@selectedDate.GetValueOrDefault().ToString("D", new CultureInfo("es-ES"))</h2>
         <RadzenDatePicker @bind-Value=@selectedDate TValue="DateTime?" DateFormat="d" Change=@OnDateChange />
         <hr />
-        <button @onclick="ScheduleAppointment" class="btn btn-outline-info btn-sm" type="button">Programar una cita</button>
+        <button @onclick="BookAppointment" class="btn btn-outline-info btn-sm" type="button">Programar una cita</button>
     </div>
 </div>
 
 @code {
+    private DateTime currentTime;
     private DateTime? selectedDate;
     private List<AppointmentDetails> appointmentsForSelectedDate = new List<AppointmentDetails>();
 
     protected override async Task OnInitializedAsync()
     {
-        selectedDate = DateTime.UtcNow.ToLocalTime().Date;
+        currentTime = DateTime.UtcNow.ToLocalTime();
+        selectedDate = currentTime.Date;
+        await RefreshAppointmentsList();
+    }
+
+    private async Task RefreshAppointmentsList()
+    {
         appointmentsForSelectedDate = await _appointmentService.GetAppointmentDetailsListByDate(selectedDate.GetValueOrDefault());
     }
 
     private async Task OnDateChange(DateTime? date)
     {
-        appointmentsForSelectedDate = await _appointmentService.GetAppointmentDetailsListByDate(selectedDate.GetValueOrDefault());
+        await RefreshAppointmentsList();
     }
 
     private async Task ManageAppointment(int appointmentId)
     {
         await _dialogService.OpenAsync<AppointmentDetailsPage>("", new Dictionary<string, object> { { "AppointmentId", appointmentId } });
-        appointmentsForSelectedDate = await _appointmentService.GetAppointmentDetailsListByDate(selectedDate.GetValueOrDefault());
+        await RefreshAppointmentsList();
     }
 
-    private async Task ScheduleAppointment()
+    private async Task BookAppointment()
     {
-        // Open the appointment scheduler modal
+        await _dialogService.OpenAsync<BookAppointmentPage>("Programar una cita nueva");
+        await RefreshAppointmentsList();
     }
 }

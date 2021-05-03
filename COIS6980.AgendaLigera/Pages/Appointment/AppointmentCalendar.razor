@@ -17,7 +17,7 @@
 
         @if ((employeeAppointments?.Count ?? 0) > 0)
         {
-            <RadzenTree style="width: 100%;" Data="@employeeAppointments">
+            <RadzenTree style="width: 100%;" Data=@employeeAppointments>
                 <RadzenTreeLevel TextProperty="ServiceTitle" ChildrenProperty="Customers" />
                 <RadzenTreeLevel TextProperty="ServiceCustomerDescription" HasChildren="@((customer) => false)">
                     <Template>

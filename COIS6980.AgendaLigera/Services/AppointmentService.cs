@@ -69,7 +69,6 @@ namespace COIS6980.AgendaLigera.Services
 
             var appointmentsQuery = _agendaLigeraCtx.Appointments
                 .Include(x => x.ServiceRecipient)
-                    .ThenInclude(x => x.User)
                 .Include(x => x.ServiceSchedule)
                     .ThenInclude(x => x.Service)
                     .ThenInclude(x => x.Employee)
@@ -80,8 +79,8 @@ namespace COIS6980.AgendaLigera.Services
             if (!string.IsNullOrWhiteSpace(userId))
             {
                 appointmentsQuery = appointmentsQuery
-                    .Where(x => x.ServiceRecipient.User.Id == userId
-                    || x.ServiceSchedule.Service.Employee.User.Id == userId);
+                    .Where(x => x.ServiceRecipient.UserId == userId
+                    || x.ServiceSchedule.Service.Employee.UserId == userId);
             }
 
             var appointmentsFound = await appointmentsQuery.ToListAsync();
@@ -297,7 +296,6 @@ namespace COIS6980.AgendaLigera.Services
         {
             var appointmentsQuery = _agendaLigeraCtx.Appointments
                 .Include(x => x.ServiceRecipient)
-                    .ThenInclude(x => x.User)
                 .Include(x => x.ServiceSchedule)
                     .ThenInclude(x => x.Service)
                     .ThenInclude(x => x.Employee)
@@ -319,11 +317,11 @@ namespace COIS6980.AgendaLigera.Services
                 {
                     case "paciente":
                         appointmentsQuery = appointmentsQuery
-                            .Where(x => x.ServiceRecipient.User.Id == userId);
+                            .Where(x => x.ServiceRecipient.UserId == userId);
                         break;
                     case "doctora":
                         appointmentsQuery = appointmentsQuery
-                            .Where(x => x.ServiceSchedule.Service.Employee.User.Id == userId);
+                            .Where(x => x.ServiceSchedule.Service.Employee.UserId == userId);
                         break;
                     default:
                         break;
