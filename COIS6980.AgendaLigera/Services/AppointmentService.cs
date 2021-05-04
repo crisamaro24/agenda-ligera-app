@@ -1,6 +1,7 @@
 ﻿using COIS6980.AgendaLigera.Models.Appointment;
 using COIS6980.EFCoreDb.Models;
 using Microsoft.EntityFrameworkCore;
+using MoreLinq;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,18 +21,26 @@ namespace COIS6980.AgendaLigera.Services
             bool deleted = false);
         Task<List<EmployeeServiceAppointments>> GetEmployeeServiceAppointmentsByDate(
             DateTime date,
-            int? employeeId = null,
+            string userId = null,
             bool active = true,
             bool deleted = false);
         Task<AppointmentDetails> GetAppointmentDetails(int appointmentId);
         Task CancelAppointment(int appointmentId);
-        Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsBetweenDates(int serviceId, DateTime startDate, DateTime endDate);
+        Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsBetweenDates(
+            int serviceId,
+            DateTime startDate,
+            DateTime endDate);
         Task RescheduleAppointment(int appointmentId, int newServiceScheduleId);
         Task<List<AppointmentDetails>> GetAppointmentDetailsListByDate(
             DateTime date,
             string userId = null,
             bool active = true,
             bool deleted = false);
+        Task<string> GetUserRole(string userId);
+        Task<List<EmployeeDetails>> GetServiceProvidersForBooking(string userId = null);
+        Task<List<ServiceRecipientDetails>> GetServiceRecipientsForBooking(string userId = null);
+        Task<List<ServiceDetails>> GetEmployeeServicesForBooking(int employeeId);
+        Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsForBooking(int serviceId, DateTime date);
     }
     public class AppointmentService : IAppointmentService
     {
@@ -107,7 +116,7 @@ namespace COIS6980.AgendaLigera.Services
 
         public async Task<List<EmployeeServiceAppointments>> GetEmployeeServiceAppointmentsByDate(
             DateTime date,
-            int? employeeId = null,
+            string userId = null,
             bool active = true,
             bool deleted = false)
         {
@@ -119,10 +128,16 @@ namespace COIS6980.AgendaLigera.Services
                 .Where(x => x.IsActive == active && x.IsDeleted == deleted)
                 .Where(x => x.ServiceSchedule.StartDate.Date == date);
 
-            if (employeeId != null)
+            if (!string.IsNullOrWhiteSpace(userId))
             {
-                appointmentsQuery = appointmentsQuery
-                    .Where(x => x.ServiceSchedule.Service.Employee.EmployeeId == employeeId);
+                var userRole = await GetUserRole(userId);
+
+                if (string.IsNullOrWhiteSpace(userRole))
+                    return new List<EmployeeServiceAppointments>();
+
+                if (userRole.ToLowerInvariant() == "doctora")
+                    appointmentsQuery = appointmentsQuery
+                            .Where(x => x.ServiceSchedule.Service.Employee.UserId == userId);
             }
 
             var appointmentsFound = await appointmentsQuery.OrderBy(x => x.ServiceSchedule.StartDate).ToListAsync();
@@ -135,13 +150,13 @@ namespace COIS6980.AgendaLigera.Services
 
             foreach (var appointment in appointmentsFound)
             {
-                employeeId ??= appointment.ServiceSchedule.Service.EmployeeId;
+                var employeeId = appointment.ServiceSchedule.Service.EmployeeId;
                 var serviceId = appointment.ServiceSchedule.ServiceId;
                 var customerName = appointment.ServiceRecipient.FirstName + " " + appointment.ServiceRecipient.LastName;
                 var startTime = appointment.ServiceSchedule.StartDate.ToString("hh:mm tt");
 
                 var repeatedEmployeeService = employeeServiceAppointments
-                    .FirstOrDefault(x => x.EmployeeId == employeeId.Value
+                    .FirstOrDefault(x => x.EmployeeId == employeeId
                     && x.ServiceId == serviceId);
 
                 if (repeatedEmployeeService == null)
@@ -164,7 +179,7 @@ namespace COIS6980.AgendaLigera.Services
                             }
                         },
                         ServiceId = serviceId,
-                        EmployeeId = employeeId.Value
+                        EmployeeId = employeeId
                     });
                 }
                 else
@@ -232,7 +247,10 @@ namespace COIS6980.AgendaLigera.Services
             }
         }
 
-        public async Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsBetweenDates(int serviceId, DateTime startDate, DateTime endDate)
+        public async Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsBetweenDates(
+            int serviceId,
+            DateTime startDate,
+            DateTime endDate)
         {
             var today = DateTime.UtcNow.ToLocalTime();
 
@@ -304,11 +322,7 @@ namespace COIS6980.AgendaLigera.Services
 
             if (!string.IsNullOrWhiteSpace(userId))
             {
-                var userRole = await _agendaLigeraCtx.AspNetUserRoles
-                    .Include(x => x.Role)
-                    .Where(x => x.UserId == userId)
-                    .Select(x => x.Role.Name)
-                    .FirstOrDefaultAsync();
+                var userRole = await GetUserRole(userId);
 
                 if (string.IsNullOrWhiteSpace(userRole))
                     return new List<AppointmentDetails>();
@@ -348,6 +362,160 @@ namespace COIS6980.AgendaLigera.Services
                 }).ToList();
 
             return appointments;
+        }
+
+        public async Task<string> GetUserRole(string userId)
+        {
+            var userRole = await _agendaLigeraCtx.AspNetUserRoles
+                .Include(x => x.Role)
+                .Where(x => x.UserId == userId)
+                .Select(x => x.Role.Name)
+                .FirstOrDefaultAsync();
+
+            return userRole;
+        }
+
+        public async Task<List<EmployeeDetails>> GetServiceProvidersForBooking(string userId = null)
+        {
+            DateTime currentTime = DateTime.UtcNow.ToLocalTime();
+
+            var serviceSchedulesQuery = _agendaLigeraCtx.ServiceSchedules
+                .Include(x => x.Service)
+                    .ThenInclude(x => x.Employee)
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.Service.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.Service.Employee.IsActive == true && x.Service.Employee.IsDeleted == false)
+                .Where(x => x.StartDate > currentTime);
+
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var userRole = await GetUserRole(userId);
+
+                if (string.IsNullOrWhiteSpace(userRole))
+                    return new List<EmployeeDetails>();
+
+                if (userRole.ToLowerInvariant() == "doctora")
+                    serviceSchedulesQuery = serviceSchedulesQuery
+                            .Where(x => x.Service.Employee.UserId == userId);
+            }
+
+            var serviceSchedules = await serviceSchedulesQuery.ToListAsync();
+
+            if ((serviceSchedules?.Count ?? 0) == 0)
+                return new List<EmployeeDetails>();
+
+            var serviceProviders = serviceSchedules
+                .Select(x => new EmployeeDetails()
+                {
+                    EmployeeId = x.Service.EmployeeId,
+                    EmployeeName = x.Service.Employee.FirstName + " " + x.Service.Employee.LastName
+                })
+                .DistinctBy(x => x.EmployeeId)
+                .OrderBy(x => x.EmployeeName)
+                .ToList();
+
+            return serviceProviders;
+        }
+
+        public async Task<List<ServiceRecipientDetails>> GetServiceRecipientsForBooking(string userId = null)
+        {
+            var serviceRecipientsQuery = _agendaLigeraCtx.ServiceRecipients
+                .Where(x => x.IsActive == true && x.IsDeleted == false);
+
+            if (!string.IsNullOrWhiteSpace(userId))
+            {
+                var userRole = await GetUserRole(userId);
+
+                if (string.IsNullOrWhiteSpace(userRole))
+                    return new List<ServiceRecipientDetails>();
+
+                if (userRole.ToLowerInvariant() == "paciente")
+                    serviceRecipientsQuery = serviceRecipientsQuery
+                            .Where(x => x.UserId == userId);
+            }
+
+            var serviceRecipientsFound = await serviceRecipientsQuery.OrderBy(x => x.FirstName).ToListAsync();
+
+            if ((serviceRecipientsFound?.Count ?? 0) == 0)
+                return new List<ServiceRecipientDetails>();
+
+            var serviceRecipients = serviceRecipientsFound
+                .Select(x => new ServiceRecipientDetails()
+                {
+                    ServiceRecipientId = x.ServiceRecipientId,
+                    ServiceRecipientName = x.FirstName + " " + x.LastName
+                }).ToList();
+
+            return serviceRecipients;
+        }
+
+        public async Task<List<ServiceDetails>> GetEmployeeServicesForBooking(int employeeId)
+        {
+            DateTime currentTime = DateTime.UtcNow.ToLocalTime();
+
+            var serviceSchedules = await _agendaLigeraCtx.ServiceSchedules
+                .Include(x => x.Service)
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.Service.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.Service.EmployeeId == employeeId)
+                .Where(x => x.StartDate > currentTime)
+                .ToListAsync();
+
+            if ((serviceSchedules?.Count ?? 0) == 0)
+                return new List<ServiceDetails>();
+
+            var employeeServices = serviceSchedules
+                .Select(x => new ServiceDetails()
+                {
+                    ServiceId = x.Service.ServiceId,
+                    ServiceName = x.Service.Title
+                })
+                .DistinctBy(x => x.ServiceId)
+                .OrderBy(x => x.ServiceName)
+                .ToList();
+
+            return employeeServices;
+        }
+
+        public async Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsForBooking(int serviceId, DateTime date)
+        {
+            var today = DateTime.UtcNow.ToLocalTime();
+
+            var scheduledAppointments = await _agendaLigeraCtx.Appointments
+                .Include(x => x.ServiceRecipient)
+                .Include(x => x.ServiceSchedule)
+                    .ThenInclude(x => x.Service)
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.ServiceSchedule.ServiceId == serviceId)
+                .Where(x => x.ServiceSchedule.StartDate > today)
+                .Where(x => x.ServiceSchedule.StartDate.Date == date.Date)
+                .ToListAsync();
+
+            var serviceSchedulesFound = await _agendaLigeraCtx.ServiceSchedules
+                .Include(x => x.Service)
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.ServiceId == serviceId)
+                .Where(x => x.StartDate > today)
+                .Where(x => x.StartDate.Date == date.Date)
+                .OrderBy(x => x.StartDate)
+                .ToListAsync();
+
+            var availableServiceSchedules = serviceSchedulesFound
+                .Where(x => x.Capacity == null || x.Capacity > scheduledAppointments.Where(y => y.ServiceScheduleId == x.ServiceScheduleId).Count())
+                .ToList();
+
+            var availableServiceAppointments = availableServiceSchedules
+                .Select(x => new ServiceScheduleDetails()
+                {
+                    ServiceScheduleId = x.ServiceScheduleId,
+                    FormattedDate = x.StartDate.Date.ToString("D", new CultureInfo("es-ES")),
+                    FormattedTime = x.StartDate.ToString("hh:mm tt") + ((x.Capacity ?? 0) == 1 ? (" - " + x.EndDate.ToString("hh:mm tt")) : string.Empty),
+                    StartDate = x.StartDate,
+                    EndDate = x.EndDate,
+                    Capacity = x.Capacity
+                }).ToList();
+
+            return availableServiceAppointments;
         }
     }
 }

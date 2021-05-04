@@ -1,35 +1,46 @@
 ﻿@inject IAppointmentService _appointmentService
 @inject DialogService _dialogService
 
-<div class="row">
-    <div class="col-12">
-        <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Doctora" AllowClear="false" TValue="int" TextProperty="EmployeeName"
+@if ((serviceProviders?.Count ?? 0) > 0)
+{
+    <div class="row">
+        <div class="col-12">
+            <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Doctora" AllowClear="false" TValue="int" TextProperty="EmployeeName"
                         ValueProperty="EmployeeId" Data=@serviceProviders @bind-Value=@selectedEmployeeId
                         Change=@OnEmployeeChange />
-
-        <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Servicio" AllowClear="false" TValue="int" TextProperty="ServiceName"
+            <br />
+            <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Servicio" AllowClear="false" TValue="int" TextProperty="ServiceName"
                         ValueProperty="ServiceId" Disabled=@(selectedEmployeeId == 0)
                         Data=@employeeServices @bind-Value=@selectedServiceId
                         Change=@OnServiceChange />
-
-        <RadzenDatePicker class="d-block w-50 m-auto" TValue="DateTime?" DateFormat="d" Disabled=@(selectedServiceId == 0)
+            <br />
+            <RadzenDatePicker class="d-block w-50 m-auto" TValue="DateTime?" DateFormat="d" Disabled=@(selectedServiceId == 0)
                           @bind-Value=@selectedDate
                           Change=@OnDateChange />
-
-        <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Hora" AllowClear="false" TValue="int" TextProperty="FormattedTime"
-                        ValueProperty="ServiceScheduleId" Disabled=@((availableAppointmentSlots?.Count ?? 0) == 0)
-                        Data=@availableAppointmentSlots @bind-Value=@selectedServiceScheduleId />
-
-        <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Paciente" AllowClear="false" TValue="int" TextProperty="ServiceRecipientName"
+            <br />
+            <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Hora" AllowClear="false" TValue="int" TextProperty="FormattedTime"
+                        ValueProperty="ServiceScheduleId" Disabled=@((availableSchedules?.Count ?? 0) == 0)
+                        Data=@availableSchedules @bind-Value=@selectedServiceScheduleId />
+            <br />
+            <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Paciente" AllowClear="false" TValue="int" TextProperty="ServiceRecipientName"
                         ValueProperty="ServiceRecipientId" Data=@serviceRecipients @bind-Value=@selectedServiceRecipientId />
-    </div>
-    <div class="col-12 text-center">
-        <button @onclick="ConfirmAppointmentBooking" disabled="@(selectedServiceScheduleId == 0 || selectedServiceRecipientId == 0)"
+        </div>
+        <div class="col-12 text-center mt-3">
+            <button @onclick="ConfirmAppointmentBooking" disabled="@(selectedServiceScheduleId == 0 || selectedServiceRecipientId == 0)"
                 class="btn btn-outline-info btn-sm" type="button">
-            Programar cita
-        </button>
+                Programar cita
+            </button>
+        </div>
     </div>
-</div>
+}
+else
+{
+    <div class="row">
+        <div class="col-12">
+            <p class="lead mt-1">Lo sentimos, no hay citas disponibles en este momento. Por favor, inténtelo de nuevo más tarde.</p>
+        </div>
+    </div>
+}
 
 @code {
     private int selectedEmployeeId;
@@ -40,27 +51,31 @@
 
     private List<EmployeeDetails> serviceProviders = new List<EmployeeDetails>();
     private List<ServiceDetails> employeeServices = new List<ServiceDetails>();
-    private List<ServiceScheduleDetails> availableAppointmentSlots = new List<ServiceScheduleDetails>();
+    private List<ServiceScheduleDetails> availableSchedules = new List<ServiceScheduleDetails>();
     private List<ServiceRecipientDetails> serviceRecipients = new List<ServiceRecipientDetails>();
 
     protected override async Task OnParametersSetAsync()
     {
         selectedDate = DateTime.UtcNow.ToLocalTime().Date;
+        serviceProviders = await _appointmentService.GetServiceProvidersForBooking();
+        serviceRecipients = await _appointmentService.GetServiceRecipientsForBooking();
     }
 
     private async Task OnEmployeeChange()
     {
-        // Get employee services
+        selectedServiceId = 0;
+        selectedServiceScheduleId = 0;
+        employeeServices = await _appointmentService.GetEmployeeServicesForBooking(selectedEmployeeId);
     }
 
     private async Task OnServiceChange()
     {
-        // Get available service schedules for selected date
+        availableSchedules = await _appointmentService.GetAvailableServiceAppointmentsForBooking(selectedServiceId, selectedDate.GetValueOrDefault());
     }
 
     private async Task OnDateChange(DateTime? date)
     {
-        // Get available service schedules for selected date
+        availableSchedules = await _appointmentService.GetAvailableServiceAppointmentsForBooking(selectedServiceId, selectedDate.GetValueOrDefault());
     }
 
     private async Task ConfirmAppointmentBooking()
