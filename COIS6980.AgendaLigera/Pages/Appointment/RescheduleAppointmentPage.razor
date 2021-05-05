@@ -1,5 +1,6 @@
 ﻿@inject IAppointmentService _appointmentService
 @inject DialogService _dialogService
+@inject NotificationService _notificationService
 
 @if (rescheduleStatus == false)
 {
@@ -127,6 +128,16 @@ else
     private async Task RescheduleAppointment()
     {
         await _appointmentService.RescheduleAppointment(AppointmentId, selectedServiceScheduleId);
+
+        var notification = new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "Muy bien!",
+            Detail = "La cita ha sido reprogramada.",
+            Duration = 3000
+        };
+
         _dialogService.Close();
+        _notificationService.Notify(notification);
     }
 }

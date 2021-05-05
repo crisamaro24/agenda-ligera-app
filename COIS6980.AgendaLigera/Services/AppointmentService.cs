@@ -41,6 +41,7 @@ namespace COIS6980.AgendaLigera.Services
         Task<List<ServiceRecipientDetails>> GetServiceRecipientsForBooking(string userId = null);
         Task<List<ServiceDetails>> GetEmployeeServicesForBooking(int employeeId);
         Task<List<ServiceScheduleDetails>> GetAvailableServiceAppointmentsForBooking(int serviceId, DateTime date);
+        Task BookAppointment(int serviceRecipientId, int serviceScheduleId);
     }
     public class AppointmentService : IAppointmentService
     {
@@ -77,7 +78,6 @@ namespace COIS6980.AgendaLigera.Services
                 return new List<AppointmentCalendarDetails>();
 
             var appointmentsQuery = _agendaLigeraCtx.Appointments
-                .Include(x => x.ServiceRecipient)
                 .Include(x => x.ServiceSchedule)
                     .ThenInclude(x => x.Service)
                     .ThenInclude(x => x.Employee)
@@ -87,9 +87,14 @@ namespace COIS6980.AgendaLigera.Services
 
             if (!string.IsNullOrWhiteSpace(userId))
             {
-                appointmentsQuery = appointmentsQuery
-                    .Where(x => x.ServiceRecipient.UserId == userId
-                    || x.ServiceSchedule.Service.Employee.UserId == userId);
+                var userRole = await GetUserRole(userId);
+
+                if (string.IsNullOrWhiteSpace(userRole))
+                    return new List<AppointmentCalendarDetails>();
+
+                if (userRole.ToLowerInvariant() == "doctora")
+                    appointmentsQuery = appointmentsQuery
+                            .Where(x => x.ServiceSchedule.Service.Employee.UserId == userId);
             }
 
             var appointmentsFound = await appointmentsQuery.ToListAsync();
@@ -106,8 +111,8 @@ namespace COIS6980.AgendaLigera.Services
 
                     AppointmentId = x.AppointmentId,
                     ServiceId = x.ServiceSchedule.Service.ServiceId,
-                    ServiceScheduleId = x.ServiceSchedule.ServiceScheduleId,
-                    ServiceRecipientId = x.ServiceRecipient.ServiceRecipientId,
+                    ServiceScheduleId = x.ServiceScheduleId,
+                    ServiceRecipientId = x.ServiceRecipientId,
                     ServiceProviderEmployeeId = x.ServiceSchedule.Service.Employee.EmployeeId
                 }).ToList();
 
@@ -174,8 +179,8 @@ namespace COIS6980.AgendaLigera.Services
                             {
                                 ServiceCustomerDescription = startTime + " - " + customerName,
                                 AppointmentId = appointment.AppointmentId,
-                                ServiceScheduleId = appointment.ServiceSchedule.ServiceScheduleId,
-                                ServiceRecipientId = appointment.ServiceRecipient.ServiceRecipientId
+                                ServiceScheduleId = appointment.ServiceScheduleId,
+                                ServiceRecipientId = appointment.ServiceRecipientId
                             }
                         },
                         ServiceId = serviceId,
@@ -188,8 +193,8 @@ namespace COIS6980.AgendaLigera.Services
                     {
                         ServiceCustomerDescription = startTime + " - " + customerName,
                         AppointmentId = appointment.AppointmentId,
-                        ServiceScheduleId = appointment.ServiceSchedule.ServiceScheduleId,
-                        ServiceRecipientId = appointment.ServiceRecipient.ServiceRecipientId
+                        ServiceScheduleId = appointment.ServiceScheduleId,
+                        ServiceRecipientId = appointment.ServiceRecipientId
                     });
                 }
             }
@@ -255,7 +260,6 @@ namespace COIS6980.AgendaLigera.Services
             var today = DateTime.UtcNow.ToLocalTime();
 
             var scheduledAppointments = await _agendaLigeraCtx.Appointments
-                .Include(x => x.ServiceRecipient)
                 .Include(x => x.ServiceSchedule)
                     .ThenInclude(x => x.Service)
                 .Where(x => x.IsActive == true && x.IsDeleted == false)
@@ -516,6 +520,21 @@ namespace COIS6980.AgendaLigera.Services
                 }).ToList();
 
             return availableServiceAppointments;
+        }
+
+        public async Task BookAppointment(int serviceRecipientId, int serviceScheduleId)
+        {
+            var appointment = new Appointment()
+            {
+                ServiceRecipientId = serviceRecipientId,
+                ServiceScheduleId = serviceScheduleId,
+                IsActive = true,
+                IsDeleted = false,
+                CreatedDate = DateTime.UtcNow.ToLocalTime()
+            };
+
+            await _agendaLigeraCtx.AddAsync(appointment);
+            await _agendaLigeraCtx.SaveChangesAsync();
         }
     }
 }

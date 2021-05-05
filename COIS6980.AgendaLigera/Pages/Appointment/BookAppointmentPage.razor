@@ -1,5 +1,6 @@
 ﻿@inject IAppointmentService _appointmentService
 @inject DialogService _dialogService
+@inject NotificationService _notificationService
 
 @if ((serviceProviders?.Count ?? 0) > 0)
 {
@@ -43,6 +44,9 @@ else
 }
 
 @code {
+    [Parameter]
+    public string UserId { get; set; }
+
     private int selectedEmployeeId;
     private int selectedServiceId;
     private DateTime? selectedDate;
@@ -57,8 +61,8 @@ else
     protected override async Task OnParametersSetAsync()
     {
         selectedDate = DateTime.UtcNow.ToLocalTime().Date;
-        serviceProviders = await _appointmentService.GetServiceProvidersForBooking();
-        serviceRecipients = await _appointmentService.GetServiceRecipientsForBooking();
+        serviceProviders = await _appointmentService.GetServiceProvidersForBooking(UserId);
+        serviceRecipients = await _appointmentService.GetServiceRecipientsForBooking(UserId);
     }
 
     private async Task OnEmployeeChange()
@@ -81,6 +85,17 @@ else
     private async Task ConfirmAppointmentBooking()
     {
         // Create appointment with selected data
+        await _appointmentService.BookAppointment(selectedServiceRecipientId, selectedServiceScheduleId);
+
+        var notification = new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "Muy bien!",
+            Detail = "La cita ha sido creada.",
+            Duration = 3000
+        };
+
         _dialogService.Close();
+        _notificationService.Notify(notification);
     }
 }

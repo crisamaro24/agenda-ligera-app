@@ -1,5 +1,6 @@
-﻿@page "/dashboard"
+﻿@page "/"
 @attribute [Authorize(Roles = "Doctora,Secretaria,Paciente")]
+@inject IHttpContextAccessor _httpContextAccessor
 @inject IAppointmentService _appointmentService
 @inject DialogService _dialogService
 
@@ -49,12 +50,14 @@
 </div>
 
 @code {
+    private string userId;
     private DateTime currentTime;
     private DateTime? selectedDate;
     private List<AppointmentDetails> appointmentsForSelectedDate = new List<AppointmentDetails>();
 
     protected override async Task OnInitializedAsync()
     {
+        userId = _httpContextAccessor.HttpContext.User.GetUserId();
         currentTime = DateTime.UtcNow.ToLocalTime();
         selectedDate = currentTime.Date;
         await RefreshAppointmentsList();
@@ -62,7 +65,7 @@
 
     private async Task RefreshAppointmentsList()
     {
-        appointmentsForSelectedDate = await _appointmentService.GetAppointmentDetailsListByDate(selectedDate.GetValueOrDefault());
+        appointmentsForSelectedDate = await _appointmentService.GetAppointmentDetailsListByDate(selectedDate.GetValueOrDefault(), userId);
     }
 
     private async Task OnDateChange(DateTime? date)
@@ -78,7 +81,7 @@
 
     private async Task BookAppointment()
     {
-        await _dialogService.OpenAsync<BookAppointmentPage>("Programar una cita nueva");
+        await _dialogService.OpenAsync<BookAppointmentPage>("Programar una cita nueva", new Dictionary<string, object> { { "UserId", userId } });
         await RefreshAppointmentsList();
     }
 }

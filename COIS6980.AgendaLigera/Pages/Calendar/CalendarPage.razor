@@ -1,8 +1,14 @@
 ﻿@page "/calendario"
 @attribute [Authorize(Roles = "Doctora,Secretaria")]
+@inject IHttpContextAccessor _httpContextAccessor
 
-<AppointmentCalendar></AppointmentCalendar>
+<AppointmentCalendar UserId=@userId></AppointmentCalendar>
 
 @code {
+    private string userId;
 
+    protected override void OnInitialized()
+    {
+        userId = _httpContextAccessor.HttpContext.User.GetUserId();
+    }
 }

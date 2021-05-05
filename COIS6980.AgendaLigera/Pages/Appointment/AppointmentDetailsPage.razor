@@ -1,5 +1,6 @@
 ﻿@inject IAppointmentService _appointmentService
 @inject DialogService _dialogService
+@inject NotificationService _notificationService
 
 @if (cancelAppointmentStatus == false && rescheduleAppointmentStatus == false)
 {
@@ -76,6 +77,16 @@ else if (cancelAppointmentStatus == true)
     private async Task CancelAppointment()
     {
         await _appointmentService.CancelAppointment(AppointmentId);
+
+        var notification = new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "Muy bien!",
+            Detail = "La cita ha sido cancelada.",
+            Duration = 3000
+        };
+
         _dialogService.Close();
+        _notificationService.Notify(notification);
     }
 }

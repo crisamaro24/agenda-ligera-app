@@ -7,19 +7,9 @@
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </li>
         <AuthorizeView Roles="Doctora,Secretaria,Paciente">
             <li class="nav-item px-3">
-                <NavLink class="nav-link" href="dashboard">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                     <span class="oi oi-dashboard" aria-hidden="true"></span> Dashboard
                 </NavLink>
             </li>
@@ -28,6 +18,13 @@
             <li class="nav-item px-3">
                 <NavLink class="nav-link" href="calendario">
                     <span class="oi oi-calendar" aria-hidden="true"></span> Calendario
+                </NavLink>
+            </li>
+        </AuthorizeView>
+        <AuthorizeView Roles="Doctora">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="servicios">
+                    <span class="oi oi-briefcase" aria-hidden="true"></span> Servicios
                 </NavLink>
             </li>
         </AuthorizeView>

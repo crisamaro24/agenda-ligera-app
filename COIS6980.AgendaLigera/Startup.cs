@@ -64,14 +64,12 @@ namespace COIS6980.AgendaLigera
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            // Remove later
-            services.AddScoped<IWeatherForecastService, WeatherForecastService>();
-
             // Configuration (Options pattern)
             services.Configure<SendGridOptions>(Configuration.GetSection("SendGrid"));
 
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IAppointmentNotificationService, AppointmentNotificationService>();
+            services.AddScoped<IEmployeeServices, EmployeeServices>();
 
             // Radzen components
             services.AddScoped<DialogService>();
@@ -94,6 +92,7 @@ namespace COIS6980.AgendaLigera
                 }));
 
             services.AddHangfireServer();
+            services.AddHttpContextAccessor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

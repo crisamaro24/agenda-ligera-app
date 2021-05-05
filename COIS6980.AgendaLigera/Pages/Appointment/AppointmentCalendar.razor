@@ -4,8 +4,8 @@
 <div class="row">
     <div class="col-lg-8">
         <RadzenScheduler style="height:740px;" @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
-        Data=@calendarAppointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
-        SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
+                         Data=@calendarAppointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
+                         SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
             <RadzenDayView />
             <RadzenWeekView />
             <RadzenMonthView />
@@ -34,6 +34,9 @@
 </div>
 
 @code {
+    [Parameter]
+    public string UserId { get; set; }
+
     private DateTime selectedDate;
     private string appointmentsDisplayTitle;
     private string appointmentsDisplayMessage;
@@ -51,7 +54,7 @@
     private async Task OnLoadData(SchedulerLoadDataEventArgs args)
     {
         // Populate calendar
-        calendarAppointments = await _appointmentService.GetAppointmentsBetweenDates(args.Start, args.End);
+        calendarAppointments = await _appointmentService.GetAppointmentsBetweenDates(args.Start, args.End, UserId);
     }
 
     private async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
@@ -60,7 +63,7 @@
         selectedDate = args.Start.Date;
         appointmentsDisplayTitle = selectedDate.ToString("D", new CultureInfo("es-ES"));
         appointmentsDisplayMessage = "¡Disfruta tu día! No tiene ninguna cita hoy.";
-        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate);
+        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate, UserId);
     }
 
     private async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<AppointmentCalendarDetails> args)
@@ -76,7 +79,8 @@
         if (args.Data.End < currentTime)
         {
             args.Attributes["style"] = "background: #B0C4DE";
-        }else
+        }
+        else
         {
             args.Attributes["style"] = "background: #17a2b8";
         }
@@ -87,6 +91,6 @@
         // Show appointment details in a modal
         await _dialogService.OpenAsync<AppointmentDetailsPage>("", new Dictionary<string, object> { { "AppointmentId", serviceCustomer.AppointmentId } });
         await scheduler.Reload();
-        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate);
+        employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate, UserId);
     }
 }
