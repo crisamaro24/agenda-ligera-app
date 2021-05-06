@@ -261,7 +261,6 @@ namespace COIS6980.AgendaLigera.Services
 
             var scheduledAppointments = await _agendaLigeraCtx.Appointments
                 .Include(x => x.ServiceSchedule)
-                    .ThenInclude(x => x.Service)
                 .Where(x => x.IsActive == true && x.IsDeleted == false)
                 .Where(x => x.ServiceSchedule.ServiceId == serviceId)
                 .Where(x => x.ServiceSchedule.StartDate > today)
@@ -272,6 +271,7 @@ namespace COIS6980.AgendaLigera.Services
             var futureServiceSchedules = await _agendaLigeraCtx.ServiceSchedules
                 .Include(x => x.Service)
                 .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.Service.IsActive == true && x.IsDeleted == false)
                 .Where(x => x.ServiceId == serviceId)
                 .Where(x => x.StartDate > today)
                 .Where(x => x.StartDate.Date >= startDate.Date)
@@ -488,7 +488,6 @@ namespace COIS6980.AgendaLigera.Services
             var scheduledAppointments = await _agendaLigeraCtx.Appointments
                 .Include(x => x.ServiceRecipient)
                 .Include(x => x.ServiceSchedule)
-                    .ThenInclude(x => x.Service)
                 .Where(x => x.IsActive == true && x.IsDeleted == false)
                 .Where(x => x.ServiceSchedule.ServiceId == serviceId)
                 .Where(x => x.ServiceSchedule.StartDate > today)
@@ -498,6 +497,7 @@ namespace COIS6980.AgendaLigera.Services
             var serviceSchedulesFound = await _agendaLigeraCtx.ServiceSchedules
                 .Include(x => x.Service)
                 .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.Service.IsActive == true && x.IsDeleted == false)
                 .Where(x => x.ServiceId == serviceId)
                 .Where(x => x.StartDate > today)
                 .Where(x => x.StartDate.Date == date.Date)

@@ -43,7 +43,8 @@
     </div>
     <div class="col-lg-4">
         <h2 class="fw-400">@selectedDate.GetValueOrDefault().ToString("D", new CultureInfo("es-ES"))</h2>
-        <RadzenDatePicker @bind-Value=@selectedDate TValue="DateTime?" DateFormat="d" Change=@OnDateChange />
+        <RadzenDatePicker @bind-Value=@selectedDate TValue="DateTime?" DateFormat="d" DateRender=@OnDateRender Change=@OnDateChange />
+        <button @onclick="SelectedDateToCurrent" class="btn btn-outline-secondary btn-sm mb-1" type="button">Hoy</button>
         <hr />
         <button @onclick="BookAppointment" class="btn btn-outline-info btn-sm" type="button">Programar una cita</button>
     </div>
@@ -58,9 +59,7 @@
     protected override async Task OnInitializedAsync()
     {
         userId = _httpContextAccessor.HttpContext.User.GetUserId();
-        currentTime = DateTime.UtcNow.ToLocalTime();
-        selectedDate = currentTime.Date;
-        await RefreshAppointmentsList();
+        await SelectedDateToCurrent();
     }
 
     private async Task RefreshAppointmentsList()
@@ -83,5 +82,17 @@
     {
         await _dialogService.OpenAsync<BookAppointmentPage>("Programar una cita nueva", new Dictionary<string, object> { { "UserId", userId } });
         await RefreshAppointmentsList();
+    }
+
+    private async Task SelectedDateToCurrent()
+    {
+        currentTime = DateTime.UtcNow.ToLocalTime();
+        selectedDate = currentTime.Date;
+        await RefreshAppointmentsList();
+    }
+
+    private void OnDateRender(DateRenderEventArgs args)
+    {
+        // Add logic to highlight the calendar picker with dates that have appointments
     }
 }

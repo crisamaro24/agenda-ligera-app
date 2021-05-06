@@ -15,8 +15,8 @@
                         Data=@employeeServices @bind-Value=@selectedServiceId
                         Change=@OnServiceChange />
             <br />
-            <RadzenDatePicker class="d-block w-50 m-auto" TValue="DateTime?" DateFormat="d" Disabled=@(selectedServiceId == 0)
-                          @bind-Value=@selectedDate
+            <RadzenDatePicker class="d-block w-50 m-auto" TValue="DateTime?" DateFormat="d" DateRender=@OnDateRender
+                          Disabled=@(selectedServiceId == 0) @bind-Value=@selectedDate
                           Change=@OnDateChange />
             <br />
             <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Hora" AllowClear="false" TValue="int" TextProperty="FormattedTime"
@@ -58,6 +58,8 @@ else
     private List<ServiceScheduleDetails> availableSchedules = new List<ServiceScheduleDetails>();
     private List<ServiceRecipientDetails> serviceRecipients = new List<ServiceRecipientDetails>();
 
+    private List<ServiceScheduleDetails> availableAppointmentsForCalendar = new List<ServiceScheduleDetails>();
+
     protected override async Task OnParametersSetAsync()
     {
         selectedDate = DateTime.UtcNow.ToLocalTime().Date;
@@ -75,11 +77,13 @@ else
     private async Task OnServiceChange()
     {
         availableSchedules = await _appointmentService.GetAvailableServiceAppointmentsForBooking(selectedServiceId, selectedDate.GetValueOrDefault());
+        await UpdateAvailableAppointmentsForCalendar();
     }
 
     private async Task OnDateChange(DateTime? date)
     {
         availableSchedules = await _appointmentService.GetAvailableServiceAppointmentsForBooking(selectedServiceId, selectedDate.GetValueOrDefault());
+        await UpdateAvailableAppointmentsForCalendar();
     }
 
     private async Task ConfirmAppointmentBooking()
@@ -97,5 +101,25 @@ else
 
         _dialogService.Close();
         _notificationService.Notify(notification);
+    }
+
+    // This following methods help show available appointment dates by highlighting the calendar picker
+
+    private async Task UpdateAvailableAppointmentsForCalendar()
+    {
+        var firstDayOfMonth = new DateTime(selectedDate.GetValueOrDefault().Year, selectedDate.GetValueOrDefault().Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+        availableAppointmentsForCalendar = await _appointmentService
+            .GetAvailableServiceAppointmentsBetweenDates(selectedServiceId, firstDayOfMonth, lastDayOfMonth);
+    }
+
+    private void OnDateRender(DateRenderEventArgs args)
+    {
+        var availableAppointmentDates = availableAppointmentsForCalendar.Select(x => x.StartDate.Date).ToList();
+        if (availableAppointmentDates.Contains(args.Date))
+        {
+            args.Attributes.Add("style", "background-color: #8ff0ff;");
+        }
     }
 }
