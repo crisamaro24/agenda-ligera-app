@@ -1,0 +1,136 @@
+﻿@page "/servicios"
+@attribute [Authorize(Roles = "Doctora")]
+@inject IHttpContextAccessor _httpContextAccessor
+@inject IEmployeeServices _employeeServices
+@inject DialogService _dialogService
+
+<div class="row">
+    <div class="col-lg-8">
+        @if (currentService.ServiceId == 0)
+        {
+            <p class="lead mt-3">Aún no ha creado ningún servicio. Luego de crear uno, lograrás verlo aquí.</p>
+        }
+        else
+        {
+            <div class="card card-body" style="height:175px;">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <b>Servicio</b>
+                        <h3 class="fw-400">@currentService.ServiceName</h3>
+                        <b>Descripción</b>
+                        <div style="height:60px;overflow-y:auto;">
+                            <p class="fw-400">@currentService.ServiceDescription</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <b>Estado</b>
+                        <h3>
+                            <span class="text-white badge @(currentService.IsActive ? "bg-success" : "bg-secondary")">@(currentService.IsActive ? "Activo" : "Pausado")</span>
+                        </h3>
+                        <b>Duración estimada</b>
+                        <h3 class="fw-400">@currentService.EstimatedDurationInMinutes minutos</h3>
+                    </div>
+                    <div class="col-lg-2 mt-4">
+                        <button @onclick="() => ManageService(currentService.ServiceId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-lg-4">
+        <div class="card card-body">
+            <p class="lead">Seleccione un servicio</p>
+            <RadzenDropDown Placeholder="Servicio" AllowClear="false" TValue="int" TextProperty="ServiceName"
+                            ValueProperty="ServiceId" Data=@servicesOffered @bind-Value=@selectedServiceId
+                            Disabled=@(currentService.ServiceId == 0) Change=@OnServiceChange />
+            <div class="mt-4">
+                <button @onclick="CreateService" class="btn btn-outline-info btn-sm" type="button">Crear un servicio</button>
+                <button @onclick="AddNewSchedule" disabled="@(currentService.ServiceId == 0)" class="btn btn-outline-secondary btn-sm" type="button">Agregar horas</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 mt-3">
+        @if (currentService.ServiceId != 0)
+        {
+            <RadzenScheduler style="height:920px;" @ref=@scheduler LoadData="@OnLoadData" TItem="ServiceSchedule"
+                         Data=@currentServiceSchedules StartProperty="Start" EndProperty="End" TextProperty="ScheduleDisplayText" SelectedIndex="2"
+                         SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
+                <RadzenDayView />
+                <RadzenWeekView />
+                <RadzenMonthView />
+            </RadzenScheduler>
+        }
+    </div>
+</div>
+
+@code {
+    private string userId;
+    private int selectedServiceId;
+    private EmployeeService currentService = new EmployeeService();
+    private List<EmployeeService> servicesOffered = new List<EmployeeService>();
+
+    private RadzenScheduler<ServiceSchedule> scheduler;
+    private List<ServiceSchedule> currentServiceSchedules = new List<ServiceSchedule>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        userId = _httpContextAccessor.HttpContext.User.GetUserId();
+        servicesOffered = await _employeeServices.GetServicesOffered(userId);
+
+        if (servicesOffered.Count > 0)
+        {
+            currentService = servicesOffered.First();
+            selectedServiceId = currentService.ServiceId;
+        }
+    }
+
+    private async Task ManageService(int serviceId)
+    {
+        // Display modal to edit or delete the service
+    }
+
+    private async Task OnServiceChange()
+    {
+        currentService = servicesOffered.Where(x => x.ServiceId == selectedServiceId).First();
+        await scheduler.Reload();
+    }
+
+    private async Task CreateService()
+    {
+        // Display modal to create a new service
+    }
+
+    private async Task AddNewSchedule()
+    {
+        // Display modal to add hours for the selected service
+    }
+
+    private async Task OnLoadData(SchedulerLoadDataEventArgs args)
+    {
+        currentServiceSchedules = await _employeeServices.GetServiceSchedulesBetweenDates(selectedServiceId, args.Start, args.End, userId);
+    }
+
+    private async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
+    {
+        // Display modal to add hours for the selected service
+    }
+
+    private async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<ServiceSchedule> args)
+    {
+        // Display modal to edit or delete the selected schedule
+        await scheduler.Reload();
+    }
+
+    private void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<ServiceSchedule> args)
+    {
+        var currentTime = DateTime.UtcNow.ToLocalTime();
+        if (args.Data.End < currentTime)
+        {
+            args.Attributes["style"] = "background: #B0C4DE";
+        }
+        else
+        {
+            args.Attributes["style"] = "background: #17a2b8";
+        }
+    }
+}

@@ -28,7 +28,7 @@
         }
         else
         {
-            <p class="lead">@appointmentsDisplayMessage</p>
+            <p class="lead">Seleccione un día con citas en el calendario para ver el listado aquí.</p>
         }
     </div>
 </div>
@@ -39,7 +39,6 @@
 
     private DateTime selectedDate;
     private string appointmentsDisplayTitle;
-    private string appointmentsDisplayMessage;
     private RadzenScheduler<AppointmentCalendarDetails> scheduler;
     private IList<AppointmentCalendarDetails> calendarAppointments;
     private IList<EmployeeServiceAppointments> employeeAppointments;
@@ -48,7 +47,6 @@
     {
         selectedDate = DateTime.UtcNow.ToLocalTime().Date;
         appointmentsDisplayTitle = selectedDate.ToString("D", new CultureInfo("es-ES"));
-        appointmentsDisplayMessage = "Seleccione un día en el calendario para ver el listado de citas aquí.";
     }
 
     private async Task OnLoadData(SchedulerLoadDataEventArgs args)
@@ -62,7 +60,6 @@
         // Get employee appointments for selected date
         selectedDate = args.Start.Date;
         appointmentsDisplayTitle = selectedDate.ToString("D", new CultureInfo("es-ES"));
-        appointmentsDisplayMessage = "¡Disfruta tu día! No tiene ninguna cita hoy.";
         employeeAppointments = await _appointmentService.GetEmployeeServiceAppointmentsByDate(selectedDate, UserId);
     }
 
