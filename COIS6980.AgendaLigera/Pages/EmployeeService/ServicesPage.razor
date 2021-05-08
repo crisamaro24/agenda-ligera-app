@@ -97,7 +97,8 @@
 
     private async Task CreateService()
     {
-        // Display modal to create a new service
+        await _dialogService.OpenAsync<CreateServicePage>("Crear un servicio nuevo", new Dictionary<string, object> { { "UserId", userId } });
+        servicesOffered = await _employeeServices.GetServicesOffered(userId);
     }
 
     private async Task AddNewSchedule()

@@ -21,6 +21,8 @@ namespace COIS6980.AgendaLigera.Services
             string userId = null,
             bool active = true,
             bool deleted = false);
+        Task<bool> DuplicateServiceFound(string userId, string serviceName);
+        Task CreateService(string userId, string serviceName, string serviceDescription, int estimatedDurationInMinutes);
     }
     public class EmployeeServices : IEmployeeServices
     {
@@ -114,6 +116,42 @@ namespace COIS6980.AgendaLigera.Services
                 .ToList();
 
             return serviceSchedules;
+        }
+
+        public async Task<bool> DuplicateServiceFound(string userId, string serviceName)
+        {
+            var employeeService = await _agendaLigeraCtx.Services
+                .Include(x => x.Employee)
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.Employee.UserId == userId)
+                .Where(x => x.Title == serviceName)
+                .FirstOrDefaultAsync();
+
+            return (employeeService?.ServiceId ?? 0) != 0;
+        }
+
+        public async Task CreateService(string userId, string serviceName, string serviceDescription, int estimatedDurationInMinutes)
+        {
+            var employee = await _agendaLigeraCtx.Employees
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.UserId == userId)
+                .FirstOrDefaultAsync();
+
+            if ((employee?.EmployeeId ?? 0) != 0)
+            {
+                var service = new Service()
+                {
+                    EmployeeId = employee.EmployeeId,
+                    Title = serviceName,
+                    Description = serviceDescription,
+                    EstimatedDurationInMinutes = estimatedDurationInMinutes,
+                    IsActive = true,
+                    IsDeleted = false
+                };
+
+                await _agendaLigeraCtx.AddAsync(service);
+                await _agendaLigeraCtx.SaveChangesAsync();
+            }
         }
     }
 }
