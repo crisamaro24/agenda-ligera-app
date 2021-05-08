@@ -67,9 +67,11 @@ namespace COIS6980.AgendaLigera
             // Configuration (Options pattern)
             services.Configure<SendGridOptions>(Configuration.GetSection("SendGrid"));
 
+            // Main services
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IAppointmentNotificationService, AppointmentNotificationService>();
             services.AddScoped<IEmployeeServices, EmployeeServices>();
+            services.AddScoped<IReportService, ReportService>();
 
             // Radzen components
             services.AddScoped<DialogService>();

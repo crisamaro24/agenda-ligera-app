@@ -26,4 +26,8 @@
     <ProjectReference Include="..\COIS6980.EFCoreDb\COIS6980.EFCoreDb.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Reports\" />
+  </ItemGroup>
+
 </Project>
