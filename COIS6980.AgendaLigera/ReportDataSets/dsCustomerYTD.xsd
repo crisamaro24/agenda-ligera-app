@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="dsCustomerYTD" targetNamespace="http://tempuri.org/dsCustomerYTD.xsd" xmlns:mstns="http://tempuri.org/dsCustomerYTD.xsd" xmlns="http://tempuri.org/dsCustomerYTD.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="dsCustomerYTD" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="dsCustomerYTD" msprop:Generator_UserDSName="dsCustomerYTD">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="dsCustomerYTD" msprop:Generator_TableClassName="dsCustomerYTDDataTable" msprop:Generator_TableVarName="tabledsCustomerYTD" msprop:Generator_RowChangedName="dsCustomerYTDRowChanged" msprop:Generator_TablePropName="_dsCustomerYTD" msprop:Generator_RowDeletingName="dsCustomerYTDRowDeleting" msprop:Generator_RowChangingName="dsCustomerYTDRowChanging" msprop:Generator_RowEvHandlerName="dsCustomerYTDRowChangeEventHandler" msprop:Generator_RowDeletedName="dsCustomerYTDRowDeleted" msprop:Generator_RowClassName="dsCustomerYTDRow" msprop:Generator_UserTableName="dsCustomerYTD" msprop:Generator_RowEvArgName="dsCustomerYTDRowChangeEvent">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Paciente" msprop:Generator_ColumnVarNameInTable="columnPaciente" msprop:Generator_ColumnPropNameInRow="Paciente" msprop:Generator_ColumnPropNameInTable="PacienteColumn" msprop:Generator_UserColumnName="Paciente" type="xs:string" minOccurs="0" />
+              <xs:element name="CorreoElectronico" msprop:Generator_ColumnVarNameInTable="columnCorreoElectronico" msprop:Generator_ColumnPropNameInRow="CorreoElectronico" msprop:Generator_ColumnPropNameInTable="CorreoElectronicoColumn" msprop:Generator_UserColumnName="CorreoElectronico" type="xs:string" minOccurs="0" />
+              <xs:element name="FechaDeIngreso" msprop:Generator_ColumnVarNameInTable="columnFechaDeIngreso" msprop:Generator_ColumnPropNameInRow="FechaDeIngreso" msprop:Generator_ColumnPropNameInTable="FechaDeIngresoColumn" msprop:Generator_UserColumnName="FechaDeIngreso" type="xs:string" minOccurs="0" />
+              <xs:element name="Estado" msprop:Generator_ColumnVarNameInTable="columnEstado" msprop:Generator_ColumnPropNameInRow="Estado" msprop:Generator_ColumnPropNameInTable="EstadoColumn" msprop:Generator_UserColumnName="Estado" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

@@ -1,11 +1,7 @@
 ﻿using AspNetCore.Reporting;
 using COIS6980.AgendaLigera.Services;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace COIS6980.AgendaLigera.Controllers
@@ -20,13 +16,14 @@ namespace COIS6980.AgendaLigera.Controllers
         {
             _reportService = reportService;
             _webHostEnvironment = webHostEnvironment;
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
         }
 
         [HttpGet]
-        [Route("GetCustomerReport/{userId}/{reportType}")]
-        public async Task<IActionResult> GetYTDCustomerReport([FromRoute] string userId, [FromRoute] int reportType)
+        [Route("GetCustomerReport/{reportType}")]
+        public async Task<IActionResult> GetYTDCustomerReport([FromRoute] int reportType)
         {
-            var customersDataTable = await _reportService.GetYTDCustomerData(userId);
+            var customersDataTable = await _reportService.GetYTDCustomerData();
             var reportPath = $"{_webHostEnvironment.WebRootPath}\\Reports\\CustomerReport.rdlc";
 
             LocalReport localReport = new LocalReport(reportPath);
@@ -41,8 +38,8 @@ namespace COIS6980.AgendaLigera.Controllers
             }
             else
             {
-                result = localReport.Execute(RenderType.ExcelOpenXml);
-                return File(result.MainStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                result = localReport.Execute(RenderType.Excel);
+                return File(result.MainStream, "application/vnd.ms-excel", fileDownloadName: "reporte-de-pacientes-nuevos.xls");
             }
         }
 
@@ -65,8 +62,8 @@ namespace COIS6980.AgendaLigera.Controllers
             }
             else
             {
-                result = localReport.Execute(RenderType.ExcelOpenXml);
-                return File(result.MainStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                result = localReport.Execute(RenderType.Excel);
+                return File(result.MainStream, "application/vnd.ms-excel", "reporte-de-citas.xls");
             }
         }
     }

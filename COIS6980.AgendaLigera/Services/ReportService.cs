@@ -10,7 +10,7 @@ namespace COIS6980.AgendaLigera.Services
 {
     public interface IReportService
     {
-        Task<DataTable> GetYTDCustomerData(string userId);
+        Task<DataTable> GetYTDCustomerData();
         Task<DataTable> GetYTDAppointmentData(string userId);
 
     }
@@ -22,7 +22,7 @@ namespace COIS6980.AgendaLigera.Services
             _agendaLigeraCtx = agendaLigeraCtx;
         }
 
-        public async Task<DataTable> GetYTDCustomerData(string userId)
+        public async Task<DataTable> GetYTDCustomerData()
         {
             var currentYear = DateTime.UtcNow.ToLocalTime().Year;
             var startOfCurrentYear = new DateTime(currentYear, 1, 1);
@@ -33,13 +33,12 @@ namespace COIS6980.AgendaLigera.Services
                 .Where(x => x.IsDeleted == false)
                 .Where(x => x.CreatedDate.Date >= startOfCurrentYear.Date)
                 .Where(x => x.CreatedDate.Date <= today.Date)
-                .Where(x => x.UserId == userId)
                 .ToListAsync();
 
             var customersDataTable = new DataTable();
             customersDataTable.Columns.Add("Paciente");
-            customersDataTable.Columns.Add("Correo Electrónico");
-            customersDataTable.Columns.Add("Fecha de Ingreso");
+            customersDataTable.Columns.Add("CorreoElectronico");
+            customersDataTable.Columns.Add("FechaDeIngreso");
             customersDataTable.Columns.Add("Estado");
 
             DataRow customersDataRow;
@@ -47,8 +46,8 @@ namespace COIS6980.AgendaLigera.Services
             {
                 customersDataRow = customersDataTable.NewRow();
                 customersDataRow["Paciente"] = customer.FirstName + " " + customer.LastName;
-                customersDataRow["Correo Electrónico"] = customer.User.Email;
-                customersDataRow["Fecha de Ingreso"] = customer.CreatedDate.ToString("MMMM/dd/yyyy", new CultureInfo("es-ES")); ;
+                customersDataRow["CorreoElectronico"] = customer.User.Email;
+                customersDataRow["FechaDeIngreso"] = customer.CreatedDate.ToString("MMMM/dd/yyyy", new CultureInfo("es-ES")); ;
                 customersDataRow["Estado"] = (customer.IsActive ?? false) ? "Activo" : "Inactivo";
 
                 customersDataTable.Rows.Add(customersDataRow);
@@ -61,7 +60,7 @@ namespace COIS6980.AgendaLigera.Services
         {
             var currentYear = DateTime.UtcNow.ToLocalTime().Year;
             var startOfCurrentYear = new DateTime(currentYear, 1, 1);
-            var today = DateTime.UtcNow.ToLocalTime();
+            var endOfCurrentYear = new DateTime(currentYear, 12, 31);
 
             var appointments =
                 await _agendaLigeraCtx.Appointments
@@ -72,7 +71,7 @@ namespace COIS6980.AgendaLigera.Services
                     .ThenInclude(x => x.Employee)
                 .Where(x => x.IsDeleted == false)
                 .Where(x => x.ServiceSchedule.StartDate.Date >= startOfCurrentYear.Date)
-                .Where(x => x.ServiceSchedule.EndDate.Date <= today.Date)
+                .Where(x => x.ServiceSchedule.EndDate.Date <= endOfCurrentYear.Date)
                 .Where(x => x.ServiceSchedule.Service.Employee.UserId == userId)
                 .ToListAsync();
 

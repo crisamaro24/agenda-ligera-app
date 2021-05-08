@@ -6,6 +6,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\Reports\AppointmentReport.rdlc" />
+    <Content Remove="wwwroot\Reports\CustomerReport.rdlc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\Reports\AppointmentReport.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="wwwroot\Reports\CustomerReport.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AspNetCore.Reporting" Version="2.1.0" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.22" />
     <PackageReference Include="Hangfire.Core" Version="1.7.22" />
@@ -27,7 +41,39 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Reports\" />
+    <Compile Update="ReportDataSets\dsAppointmentYTD.Designer.cs">
+      <DependentUpon>dsAppointmentYTD.xsd</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="ReportDataSets\dsCustomerYTD.Designer.cs">
+      <DependentUpon>dsCustomerYTD.xsd</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ReportDataSets\dsAppointmentYTD.xsc">
+      <DependentUpon>dsAppointmentYTD.xsd</DependentUpon>
+    </None>
+    <None Update="ReportDataSets\dsAppointmentYTD.xsd">
+      <LastGenOutput>dsAppointmentYTD.Designer.cs</LastGenOutput>
+      <Generator>MSDataSetGenerator</Generator>
+    </None>
+    <None Update="ReportDataSets\dsAppointmentYTD.xss">
+      <DependentUpon>dsAppointmentYTD.xsd</DependentUpon>
+    </None>
+    <None Update="ReportDataSets\dsCustomerYTD.xsc">
+      <DependentUpon>dsCustomerYTD.xsd</DependentUpon>
+    </None>
+    <None Update="ReportDataSets\dsCustomerYTD.xsd">
+      <LastGenOutput>dsCustomerYTD.Designer.cs</LastGenOutput>
+      <Generator>MSDataSetGenerator</Generator>
+    </None>
+    <None Update="ReportDataSets\dsCustomerYTD.xss">
+      <DependentUpon>dsCustomerYTD.xsd</DependentUpon>
+    </None>
   </ItemGroup>
 
 </Project>

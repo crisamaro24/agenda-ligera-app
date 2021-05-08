@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="dsAppointmentYTD" targetNamespace="http://tempuri.org/dsAppointmentYTD.xsd" xmlns:mstns="http://tempuri.org/dsAppointmentYTD.xsd" xmlns="http://tempuri.org/dsAppointmentYTD.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="dsAppointmentYTD" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="dsAppointmentYTD" msprop:Generator_UserDSName="dsAppointmentYTD">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="dsAppointmentYTD" msprop:Generator_TableClassName="dsAppointmentYTDDataTable" msprop:Generator_TableVarName="tabledsAppointmentYTD" msprop:Generator_TablePropName="_dsAppointmentYTD" msprop:Generator_RowDeletingName="dsAppointmentYTDRowDeleting" msprop:Generator_RowChangingName="dsAppointmentYTDRowChanging" msprop:Generator_RowEvHandlerName="dsAppointmentYTDRowChangeEventHandler" msprop:Generator_RowDeletedName="dsAppointmentYTDRowDeleted" msprop:Generator_UserTableName="dsAppointmentYTD" msprop:Generator_RowChangedName="dsAppointmentYTDRowChanged" msprop:Generator_RowEvArgName="dsAppointmentYTDRowChangeEvent" msprop:Generator_RowClassName="dsAppointmentYTDRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Fecha" msprop:Generator_ColumnVarNameInTable="columnFecha" msprop:Generator_ColumnPropNameInRow="Fecha" msprop:Generator_ColumnPropNameInTable="FechaColumn" msprop:Generator_UserColumnName="Fecha" type="xs:string" minOccurs="0" />
+              <xs:element name="Hora" msprop:Generator_ColumnVarNameInTable="columnHora" msprop:Generator_ColumnPropNameInRow="Hora" msprop:Generator_ColumnPropNameInTable="HoraColumn" msprop:Generator_UserColumnName="Hora" type="xs:string" minOccurs="0" />
+              <xs:element name="Servicio" msprop:Generator_ColumnVarNameInTable="columnServicio" msprop:Generator_ColumnPropNameInRow="Servicio" msprop:Generator_ColumnPropNameInTable="ServicioColumn" msprop:Generator_UserColumnName="Servicio" type="xs:string" minOccurs="0" />
+              <xs:element name="Paciente" msprop:Generator_ColumnVarNameInTable="columnPaciente" msprop:Generator_ColumnPropNameInRow="Paciente" msprop:Generator_ColumnPropNameInTable="PacienteColumn" msprop:Generator_UserColumnName="Paciente" type="xs:string" minOccurs="0" />
+              <xs:element name="Cancelada" msprop:Generator_ColumnVarNameInTable="columnCancelada" msprop:Generator_ColumnPropNameInRow="Cancelada" msprop:Generator_ColumnPropNameInTable="CanceladaColumn" msprop:Generator_UserColumnName="Cancelada" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

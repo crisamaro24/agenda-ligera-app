@@ -1,5 +1,6 @@
 ﻿@page "/reportes"
 @attribute [Authorize(Roles = "Doctora")]
+@inject IHttpContextAccessor _httpContextAccessor
 
 <div class="row">
     <div class="col-12">
@@ -10,18 +11,17 @@
             <div class="row">
                 <div class="col-12">
                     <b>Nombre</b>
-                    <h3 class="fw-400">YTD Customer Report</h3>
+                    <h3 class="fw-400">Pacientes nuevos en la plataforma</h3>
                     <b>Descripción</b>
                     <div style="height:70px;overflow-y:auto;">
                         <p class="fw-400">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed bibendum risus at consectetur porta.
-                            Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Ut gravida augue eros, eget blandit ex tincidunt vel.
+                            Este reporte contiene una lista de todos los pacientes que crearon una cuenta durante el año @currentYear.
                         </p>
                     </div>
                 </div>
                 <div class="col-12 mt-4">
-                    <a class="btn btn-outline-info btn-sm" href="#" target="_blank">Generar en PDF</a>
-                    <a class="btn btn-outline-info btn-sm" href="#" target="_blank">Generar en Excel</a>
+                    <a class="btn btn-outline-danger btn-sm" href="../api/report/GetCustomerReport/1" target="_blank">Generar en PDF</a>
+                    <a class="btn btn-outline-success btn-sm" href="../api/report/GetCustomerReport/2" target="_blank">Generar en Excel</a>
                 </div>
             </div>
         </div>
@@ -31,18 +31,17 @@
             <div class="row">
                 <div class="col-12">
                     <b>Nombre</b>
-                    <h3 class="fw-400">YTD Appointment Report</h3>
+                    <h3 class="fw-400">Citas programadas en el año @currentYear</h3>
                     <b>Descripción</b>
                     <div style="height:70px;overflow-y:auto;">
                         <p class="fw-400">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed bibendum risus at consectetur porta.
-                            Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Ut gravida augue eros, eget blandit ex tincidunt vel.
+                            Este reporte contiene una lista de todas las citas programadas en el año @currentYear.
                         </p>
                     </div>
                 </div>
                 <div class="col-12 mt-4">
-                    <a class="btn btn-outline-info btn-sm" href="#" target="_blank">Generar en PDF</a>
-                    <a class="btn btn-outline-info btn-sm" href="#" target="_blank">Generar en Excel</a>
+                    <a class="btn btn-outline-danger btn-sm" href="../api/report/GetAppointmentReport/@userId/1" target="_blank">Generar en PDF</a>
+                    <a class="btn btn-outline-success btn-sm" href="../api/report/GetAppointmentReport/@userId/2" target="_blank">Generar en Excel</a>
                 </div>
             </div>
         </div>
@@ -50,5 +49,12 @@
 </div>
 
 @code {
+    private string userId;
+    private string currentYear;
 
+    protected override void OnParametersSet()
+    {
+        userId = _httpContextAccessor.HttpContext.User.GetUserId();
+        currentYear = DateTime.UtcNow.ToLocalTime().Year.ToString();
+    }
 }
