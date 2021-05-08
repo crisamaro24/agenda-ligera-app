@@ -2,16 +2,7 @@
 @inject DialogService _dialogService
 
 <div class="row">
-    <div class="col-lg-8">
-        <RadzenScheduler style="height:740px;" @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
-                         Data=@calendarAppointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
-                         SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
-            <RadzenDayView />
-            <RadzenWeekView />
-            <RadzenMonthView />
-        </RadzenScheduler>
-    </div>
-    <div class="col-lg-4">
+    <div class="col-lg-4 order-lg-2 mb-3">
         <h2 class="fw-400">@appointmentsDisplayTitle</h2>
         <hr />
 
@@ -30,6 +21,15 @@
         {
             <p class="lead">Seleccione un día con citas en el calendario para ver el listado aquí.</p>
         }
+    </div>
+    <div class="col-lg-8 order-lg-1">
+        <RadzenScheduler style="height:740px;" @ref=@scheduler LoadData="@OnLoadData" TItem="AppointmentCalendarDetails"
+                         Data=@calendarAppointments StartProperty="Start" EndProperty="End" TextProperty="Title" SelectedIndex="2"
+                         SlotSelect=@OnSlotSelect AppointmentSelect=@OnAppointmentSelect AppointmentRender=@OnAppointmentRender>
+            <RadzenDayView />
+            <RadzenWeekView />
+            <RadzenMonthView />
+        </RadzenScheduler>
     </div>
 </div>
 

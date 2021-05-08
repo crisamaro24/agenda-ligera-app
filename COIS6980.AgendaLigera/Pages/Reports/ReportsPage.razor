@@ -1,7 +1,51 @@
 ﻿@page "/reportes"
 @attribute [Authorize(Roles = "Doctora")]
 
-<h3 class="display-4">Bajo construcción</h3>
+<div class="row">
+    <div class="col-12">
+        <h1 class="fw-400">Reportes</h1>
+    </div>
+    <div class="col-lg-6 mb-3">
+        <div class="card card-body">
+            <div class="row">
+                <div class="col-12">
+                    <b>Nombre</b>
+                    <h3 class="fw-400">YTD Customers Report</h3>
+                    <b>Descripción</b>
+                    <div style="height:70px;overflow-y:auto;">
+                        <p class="fw-400">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed bibendum risus at consectetur porta.
+                            Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Ut gravida augue eros, eget blandit ex tincidunt vel.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-12 mt-4">
+                    <a class="btn btn-outline-info btn-sm" href="#" target="_blank">Generar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-3">
+        <div class="card card-body">
+            <div class="row">
+                <div class="col-12">
+                    <b>Nombre</b>
+                    <h3 class="fw-400">YTD Appointments Report</h3>
+                    <b>Descripción</b>
+                    <div style="height:70px;overflow-y:auto;">
+                        <p class="fw-400">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed bibendum risus at consectetur porta.
+                            Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Ut gravida augue eros, eget blandit ex tincidunt vel.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-12 mt-4">
+                    <a class="btn btn-outline-info btn-sm" href="#" target="_blank">Generar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
 

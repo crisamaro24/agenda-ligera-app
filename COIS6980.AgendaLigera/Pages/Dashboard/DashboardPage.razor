@@ -5,7 +5,14 @@
 @inject DialogService _dialogService
 
 <div class="row">
-    <div class="col-lg-8">
+    <div class="col-lg-4 order-lg-2 mb-4">
+        <h2 class="fw-400">@selectedDate.GetValueOrDefault().ToString("D", new CultureInfo("es-ES"))</h2>
+        <RadzenDatePicker @bind-Value=@selectedDate TValue="DateTime?" DateFormat="d" DateRender=@OnDateRender Change=@OnDateChange />
+        <button @onclick="SelectedDateToCurrent" class="btn btn-outline-secondary btn-sm mb-1" type="button">Hoy</button>
+        <hr />
+        <button @onclick="BookAppointment" class="btn btn-outline-info btn-sm" type="button">Programar una cita</button>
+    </div>
+    <div class="col-lg-8 order-lg-1">
         <h1 class="fw-400">Citas programadas</h1>
         @if ((appointmentsForSelectedDate?.Count ?? 0) > 0)
         {
@@ -27,26 +34,19 @@
                             <h3 class="fw-400">@appointment.FormattedDate</h3>
                         </div>
                         @if (appointment.EndDate > currentTime)
-                        {
-                            <div class="col-lg-2 mt-4">
-                                <button @onclick="() => ManageAppointment(appointment.AppointmentId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
-                            </div>
-                        }
-                    </div>
-                </Template>
-            </RadzenDataList>
+                    {
+                        <div class="col-xl-2 mt-4">
+                            <button @onclick="() => ManageAppointment(appointment.AppointmentId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
+                        </div>
+                    }
+                </div>
+            </Template>
+        </RadzenDataList>
         }
         else
         {
             <p class="lead mt-3">¡Disfruta tu día! No tiene ninguna cita hoy.</p>
         }
-    </div>
-    <div class="col-lg-4">
-        <h2 class="fw-400">@selectedDate.GetValueOrDefault().ToString("D", new CultureInfo("es-ES"))</h2>
-        <RadzenDatePicker @bind-Value=@selectedDate TValue="DateTime?" DateFormat="d" DateRender=@OnDateRender Change=@OnDateChange />
-        <button @onclick="SelectedDateToCurrent" class="btn btn-outline-secondary btn-sm mb-1" type="button">Hoy</button>
-        <hr />
-        <button @onclick="BookAppointment" class="btn btn-outline-info btn-sm" type="button">Programar una cita</button>
     </div>
 </div>
 

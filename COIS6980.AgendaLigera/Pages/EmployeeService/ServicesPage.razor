@@ -5,40 +5,8 @@
 @inject DialogService _dialogService
 
 <div class="row">
-    <div class="col-lg-8">
-        @if (currentService.ServiceId == 0)
-        {
-            <p class="lead mt-3">Aún no ha creado ningún servicio. Luego de crear uno, lograrás verlo aquí.</p>
-        }
-        else
-        {
-            <div class="card card-body" style="height:175px;">
-                <div class="row">
-                    <div class="col-lg-6">
-                        <b>Servicio</b>
-                        <h3 class="fw-400">@currentService.ServiceName</h3>
-                        <b>Descripción</b>
-                        <div style="height:60px;overflow-y:auto;">
-                            <p class="fw-400">@currentService.ServiceDescription</p>
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <b>Estado</b>
-                        <h3>
-                            <span class="text-white badge @(currentService.IsActive ? "bg-success" : "bg-secondary")">@(currentService.IsActive ? "Activo" : "Pausado")</span>
-                        </h3>
-                        <b>Duración estimada</b>
-                        <h3 class="fw-400">@currentService.EstimatedDurationInMinutes minutos</h3>
-                    </div>
-                    <div class="col-lg-2 mt-4">
-                        <button @onclick="() => ManageService(currentService.ServiceId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-    <div class="col-lg-4">
-        <div class="card card-body">
+    <div class="col-xl-4 order-xl-2 mb-3">
+        <div class="card card-body" style="min-height:190px;">
             <p class="lead">Seleccione un servicio</p>
             <RadzenDropDown Placeholder="Servicio" AllowClear="false" TValue="int" TextProperty="ServiceName"
                             ValueProperty="ServiceId" Data=@servicesOffered @bind-Value=@selectedServiceId
@@ -49,7 +17,39 @@
             </div>
         </div>
     </div>
-    <div class="col-12 mt-3">
+    <div class="col-xl-8 order-xl-1 mb-3">
+        @if (currentService.ServiceId == 0)
+        {
+            <p class="lead mt-3">Aún no ha creado ningún servicio. Luego de crear uno, lograrás verlo aquí.</p>
+        }
+        else
+        {
+            <div class="card card-body">
+                <div class="row">
+                    <div class="col-lg-7">
+                        <b>Servicio</b>
+                        <h3 class="fw-400">@currentService.ServiceName</h3>
+                        <b>Descripción</b>
+                        <div style="height:70px;overflow-y:auto;">
+                            <p class="fw-400">@currentService.ServiceDescription</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <b>Estado</b>
+                        <h3>
+                            <span class="text-white badge @(currentService.IsActive ? "bg-success" : "bg-secondary")">@(currentService.IsActive ? "Activo" : "Pausado")</span>
+                        </h3>
+                        <b>Duración estimada</b>
+                        <h3 class="fw-400">@currentService.EstimatedDurationInMinutes minutos</h3>
+                    </div>
+                    <div class="col-xl-2 mt-4">
+                        <button @onclick="() => ManageService(currentService.ServiceId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-12 order-3 mt-1">
         @if (currentService.ServiceId != 0)
         {
             <RadzenScheduler style="height:920px;" @ref=@scheduler LoadData="@OnLoadData" TItem="ServiceSchedule"
