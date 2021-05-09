@@ -10,34 +10,42 @@
             <div class="col-12 text-center">
                 <p class="lead">@ServiceName</p>
             </div>
-            <div class="col-2">
-                <RadzenNumeric class="w-100" Placeholder="Capacidad" @bind-Value=@capacity ShowUpDown="false" TValue="int" Min="1"
+            @if (inputValidationFailed == true)
+            {
+                <div class="col-12">
+                    <div class="alert alert-danger" role="alert">
+                        Algo anda mal con los valores enviados. Verifica los campos e inténtelo de nuevo.
+                    </div>
+                </div>
+            }
+            <div class="col-2 offset-1">
+                <RadzenNumeric class="w-100" Placeholder="1" @bind-Value=@capacity ShowUpDown="false" TValue="int" Min="1"
                                MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Capacidad de pacientes" })) />
             </div>
         </div>
         <div class="row mb-2">
-            <div class="col-5">
+            <div class="col-5 offset-1">
                 <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@startDate DateFormat="ddd, MMMM dd, yyyy"
                                   MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Fecha de comienzo" })) />
             </div>
-            <div class="col-4 offset-2">
-                <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@startTime ShowTime="true" TimeOnly="true" HoursStep="1" MinutesStep="15" DateFormat="h:mm tt"
+            <div class="col-4 offset-1">
+                <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@startTime ShowTime="true" TimeOnly="true" HoursStep="1" MinutesStep="10" DateFormat="h:mm tt"
                                   MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hora de comienzo" })) />
             </div>
         </div>
         <div class="row mb-2">
             <div class="col-4 offset-7">
-                <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@endTime ShowTime="true" TimeOnly="true" HoursStep="1" MinutesStep="15" DateFormat="h:mm tt"
+                <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@endTime ShowTime="true" TimeOnly="true" HoursStep="1" MinutesStep="10" DateFormat="h:mm tt"
                                   MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hora de finalización" })) />
             </div>
         </div>
         <div class="row">
-            <div class="col-5">
+            <div class="col-5 offset-1">
                 <RadzenDropDown class="w-100" Placeholder="Se repite?" AllowClear="false" TValue="RecurrenceOptionEnum" TextProperty="RecurrenceOptionText"
                                 ValueProperty="RecurrenceOptionId" Data=@recurrenceOptions @bind-Value=@selectedRecurrenceOption
                                 MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Se repite?" })) />
             </div>
-            <div class="col-5 offset-1">
+            <div class="col-5">
                 <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@endDate DateFormat="ddd, MMMM dd, yyyy" Disabled=@(selectedRecurrenceOption == RecurrenceOptionEnum.DoesNotRepeat)
                                   MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hasta cuando se repite?" })) />
             </div>
@@ -67,6 +75,8 @@
     private DateTime? endTime;
     private DateTime? endDate;
 
+    private bool inputValidationFailed = false;
+
     protected override void OnParametersSet()
     {
         var currentTime = DateTime.UtcNow.ToLocalTime();
@@ -80,29 +90,54 @@
 
     private async Task ConfirmSchedule()
     {
-        // Validate input fields first and then
-
-        await _employeeServices.AddServiceSchedule
-        (
-            ServiceId,
-            capacity,
-            startDate.GetValueOrDefault(),
-            startTime.GetValueOrDefault(),
-            endTime.GetValueOrDefault(),
-            selectedRecurrenceOption,
-            endDate.GetValueOrDefault()
-        );
-
-        var notification = new NotificationMessage()
+        if (FormIsValid())
         {
-            Severity = NotificationSeverity.Success,
-            Summary = "¡Muy bien!",
-            Detail = "El horario ha sido creado.",
-            Duration = 3000
-        };
+            await _employeeServices.AddServiceSchedule
+            (
+                ServiceId,
+                capacity,
+                startDate.GetValueOrDefault(),
+                startTime.GetValueOrDefault(),
+                endTime.GetValueOrDefault(),
+                selectedRecurrenceOption,
+                endDate.GetValueOrDefault()
+            );
 
-        _dialogService.Close();
-        _notificationService.Notify(notification);
+            var notification = new NotificationMessage()
+            {
+                Severity = NotificationSeverity.Success,
+                Summary = "¡Muy bien!",
+                Detail = "El horario ha sido creado.",
+                Duration = 3000
+            };
+
+            _dialogService.Close();
+            _notificationService.Notify(notification);
+        }
+        else
+        {
+            inputValidationFailed = true;
+        }
+    }
+
+    private bool FormIsValid()
+    {
+        var currentTime = DateTime.UtcNow.ToLocalTime();
+
+        if (startDate == null || startTime == null || endTime == null)
+            return false;
+        else if (startDate?.Date < currentTime.Date || endTime.Value < startTime.Value || startTime.Value < currentTime)
+            return false;
+
+        if (selectedRecurrenceOption != RecurrenceOptionEnum.DoesNotRepeat)
+        {
+            if (endDate == null)
+                return false;
+            else if (endDate?.Date < startDate?.Date)
+                return false;
+        }
+
+        return true;
     }
 
     private void ShowTooltip(ElementReference elementReference, TooltipOptions options = null) => _tooltipService.Open(elementReference, options.Text, options);
