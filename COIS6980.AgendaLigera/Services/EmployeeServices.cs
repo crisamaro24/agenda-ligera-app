@@ -166,7 +166,151 @@ namespace COIS6980.AgendaLigera.Services
             RecurrenceOptionEnum recurrenceOption,
             DateTime endDate)
         {
+            if (recurrenceOption == RecurrenceOptionEnum.DoesNotRepeat)
+            {
+                var serviceSchedule = new EFCoreDb.Models.ServiceSchedule()
+                {
+                    ServiceId = serviceId,
+                    Capacity = capacity,
+                    StartDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, startTime.Hour, startTime.Minute, startTime.Second),
+                    EndDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, endTime.Hour, endTime.Minute, endTime.Second),
+                    IsActive = true,
+                    IsDeleted = false
+                };
 
+                await _agendaLigeraCtx.AddAsync(serviceSchedule);
+            }
+            else
+            {
+                var serviceScheduleList = new List<EFCoreDb.Models.ServiceSchedule>();
+                switch (recurrenceOption)
+                {
+                    case RecurrenceOptionEnum.EveryDay:
+                        serviceScheduleList = GenerateEveryDayScheduleList(serviceId, capacity, startDate, startTime, endTime, endDate);
+                        break;
+                    case RecurrenceOptionEnum.EveryWeek:
+                        serviceScheduleList = GenerateEveryWeekScheduleList(serviceId, capacity, startDate, startTime, endTime, endDate);
+                        break;
+                    case RecurrenceOptionEnum.EveryMonth:
+                        serviceScheduleList = GenerateEveryMonthScheduleList(serviceId, capacity, startDate, startTime, endTime, endDate);
+                        break;
+                    default:
+                        break;
+                }
+
+                await _agendaLigeraCtx.AddRangeAsync(serviceScheduleList);
+            }
+
+            await _agendaLigeraCtx.SaveChangesAsync();
+        }
+
+        private List<EFCoreDb.Models.ServiceSchedule> GenerateEveryDayScheduleList(
+            int serviceId,
+            int capacity,
+            DateTime startDate,
+            DateTime startTime,
+            DateTime endTime,
+            DateTime endDate)
+        {
+            if (startDate > endDate)
+                return new List<EFCoreDb.Models.ServiceSchedule>();
+
+            var fullStartDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, startTime.Hour, startTime.Minute, startTime.Second);
+            var fullEndDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, endTime.Hour, endTime.Minute, endTime.Second);
+
+            var amountOfDaysBetweenDates = (endDate - startDate).Days;
+
+            var scheduleList = new List<EFCoreDb.Models.ServiceSchedule>();
+
+            for (int i = 0; i <= amountOfDaysBetweenDates; i++)
+            {
+                var serviceSchedule = new EFCoreDb.Models.ServiceSchedule()
+                {
+                    ServiceId = serviceId,
+                    Capacity = capacity,
+                    StartDate = fullStartDate.AddDays(i),
+                    EndDate = fullEndDate.AddDays(i),
+                    IsActive = true,
+                    IsDeleted = false
+                };
+
+                scheduleList.Add(serviceSchedule);
+            }
+
+            return scheduleList;
+        }
+
+        private List<EFCoreDb.Models.ServiceSchedule> GenerateEveryWeekScheduleList(
+            int serviceId,
+            int capacity,
+            DateTime startDate,
+            DateTime startTime,
+            DateTime endTime,
+            DateTime endDate)
+        {
+            if (startDate > endDate)
+                return new List<EFCoreDb.Models.ServiceSchedule>();
+
+            var fullStartDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, startTime.Hour, startTime.Minute, startTime.Second);
+            var fullEndDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, endTime.Hour, endTime.Minute, endTime.Second);
+
+            var amountOfDaysBetweenDates = (endDate - startDate).Days;
+            var amountOfWeeksBetweenDates = amountOfDaysBetweenDates < 1 ? 0 : (amountOfDaysBetweenDates / 7);
+
+            var scheduleList = new List<EFCoreDb.Models.ServiceSchedule>();
+
+            for (int i = 0; i <= amountOfWeeksBetweenDates; i++)
+            {
+                var serviceSchedule = new EFCoreDb.Models.ServiceSchedule()
+                {
+                    ServiceId = serviceId,
+                    Capacity = capacity,
+                    StartDate = fullStartDate.AddDays(i * 7),
+                    EndDate = fullEndDate.AddDays(i * 7),
+                    IsActive = true,
+                    IsDeleted = false
+                };
+
+                scheduleList.Add(serviceSchedule);
+            }
+
+            return scheduleList;
+        }
+
+        private List<EFCoreDb.Models.ServiceSchedule> GenerateEveryMonthScheduleList(
+            int serviceId,
+            int capacity,
+            DateTime startDate,
+            DateTime startTime,
+            DateTime endTime,
+            DateTime endDate)
+        {
+            if (startDate > endDate)
+                return new List<EFCoreDb.Models.ServiceSchedule>();
+
+            var fullStartDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, startTime.Hour, startTime.Minute, startTime.Second);
+            var fullEndDate = new DateTime(startDate.Year, startDate.Month, startDate.Day, endTime.Hour, endTime.Minute, endTime.Second);
+
+            var amountOfMonthsBetweenDates = ((endDate.Year - startDate.Year) * 12) + endDate.Month - startDate.Month + (endDate.Day >= startDate.Day ? 0 : -1);
+
+            var scheduleList = new List<EFCoreDb.Models.ServiceSchedule>();
+
+            for (int i = 0; i <= amountOfMonthsBetweenDates; i++)
+            {
+                var serviceSchedule = new EFCoreDb.Models.ServiceSchedule()
+                {
+                    ServiceId = serviceId,
+                    Capacity = capacity,
+                    StartDate = fullStartDate.AddMonths(i),
+                    EndDate = fullEndDate.AddMonths(i),
+                    IsActive = true,
+                    IsDeleted = false
+                };
+
+                scheduleList.Add(serviceSchedule);
+            }
+
+            return scheduleList;
         }
     }
 }
