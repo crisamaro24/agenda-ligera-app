@@ -1,0 +1,122 @@
+﻿@inject IEmployeeServices _employeeServices
+@inject DialogService _dialogService
+@inject NotificationService _notificationService
+@inject TooltipService _tooltipService
+
+<div class="row">
+    <div class="col-12">
+        <div class="row mb-2">
+            <div class="col-12 text-center">
+                <p class="lead">@ServiceName</p>
+            </div>
+            <div class="col-2">
+                <RadzenNumeric class="w-100" Placeholder="Capacidad" @bind-Value=@capacity ShowUpDown="false" TValue="int" Min="1"
+                               MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Capacidad de pacientes" })) />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-5">
+                <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@startDate DateFormat="ddd, MMMM dd, yyyy"
+                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Fecha de comienzo" })) />
+            </div>
+            <div class="col-4 offset-2">
+                <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@startTime ShowTime="true" TimeOnly="true" HoursStep="1" MinutesStep="15" DateFormat="h:mm tt"
+                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hora de comienzo" })) />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4 offset-7">
+                <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@endTime ShowTime="true" TimeOnly="true" HoursStep="1" MinutesStep="15" DateFormat="h:mm tt"
+                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hora de finalización" })) />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-5">
+                <RadzenDropDown class="w-100" Placeholder="Se repite?" AllowClear="false" TValue="int" TextProperty="RecurrenceOptionText"
+                                ValueProperty="RecurrenceOptionId" Data=@recurrenceOptions @bind-Value=@recurrenceOptionId
+                                MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Se repite?" })) />
+            </div>
+            <div class="col-5 offset-1">
+                <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@endDate DateFormat="ddd, MMMM dd, yyyy" Disabled=@(recurrenceOptionId == 1)
+                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hasta cuando se repite?" })) />
+            </div>
+        </div>
+    </div>
+    <div class="col-12 text-center mt-3">
+        <button @onclick="ConfirmSchedule" class="btn btn-outline-info btn-sm" type="button">
+            Crear horario
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int ServiceId { get; set; }
+
+    [Parameter]
+    public string ServiceName { get; set; }
+
+    private List<RecurrenceOption> recurrenceOptions;
+
+    private int capacity = 1;
+    private int recurrenceOptionId = 1;
+
+    private DateTime? startDate;
+    private DateTime? startTime;
+    private DateTime? endTime;
+    private DateTime? endDate;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var currentTime = DateTime.UtcNow.ToLocalTime();
+        startDate = currentTime.Date;
+        startTime = currentTime;
+        endTime = currentTime.AddHours(1);
+        endDate = currentTime.AddMonths(1);
+
+        recurrenceOptions = GetRecurrenceOptions();
+    }
+
+    private async Task ConfirmSchedule()
+    {
+        var notification = new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "¡Muy bien!",
+            Detail = "El horario ha sido creado.",
+            Duration = 3000
+        };
+
+        _dialogService.Close();
+        _notificationService.Notify(notification);
+    }
+
+    private void ShowTooltip(ElementReference elementReference, TooltipOptions options = null) => _tooltipService.Open(elementReference, options.Text, options);
+
+    private List<RecurrenceOption> GetRecurrenceOptions()
+    {
+        return new List<RecurrenceOption>()
+        {
+            new RecurrenceOption()
+            {
+                RecurrenceOptionId = 1,
+                RecurrenceOptionText = "No se repite"
+            },
+            new RecurrenceOption()
+            {
+                RecurrenceOptionId = 2,
+                RecurrenceOptionText = "Todos los dias"
+            },
+            new RecurrenceOption()
+            {
+                RecurrenceOptionId = 3,
+                RecurrenceOptionText = "Cada semana"
+            },
+            new RecurrenceOption()
+            {
+                RecurrenceOptionId = 4,
+                RecurrenceOptionText = "Cada mes"
+            }
+        };
+    }
+}

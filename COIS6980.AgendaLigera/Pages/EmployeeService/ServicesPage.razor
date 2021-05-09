@@ -13,7 +13,7 @@
                             Disabled=@(currentService.ServiceId == 0) Change=@OnServiceChange />
             <div class="mt-4">
                 <button @onclick="CreateService" class="btn btn-outline-info btn-sm" type="button">Crear un servicio</button>
-                <button @onclick="AddNewSchedule" disabled="@(currentService.ServiceId == 0)" class="btn btn-outline-secondary btn-sm" type="button">Agregar horas</button>
+                <button @onclick="CreateSchedule" disabled="@(currentService.ServiceId == 0)" class="btn btn-outline-secondary btn-sm" type="button">Crear horario</button>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
                         <h3 class="fw-400">@currentService.EstimatedDurationInMinutes minutos</h3>
                     </div>
                     <div class="col-xl-2 mt-4">
-                        <button @onclick="() => ManageService(currentService.ServiceId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
+                        <button @onclick="() => EditService(currentService.ServiceId)" class="btn btn-outline-info btn-sm" type="button">Editar</button>
                     </div>
                 </div>
             </div>
@@ -84,7 +84,7 @@
         }
     }
 
-    private async Task ManageService(int serviceId)
+    private async Task EditService(int serviceId)
     {
         // Display modal to edit or delete the service
     }
@@ -101,9 +101,11 @@
         servicesOffered = await _employeeServices.GetServicesOffered(userId);
     }
 
-    private async Task AddNewSchedule()
+    private async Task CreateSchedule()
     {
         // Display modal to add hours for the selected service
+        await _dialogService.OpenAsync<AddServiceSchedulePage>(
+        "Crear un horario nuevo", new Dictionary<string, object> { { "ServiceId", selectedServiceId }, { "ServiceName", currentService.ServiceName } });
     }
 
     private async Task OnLoadData(SchedulerLoadDataEventArgs args)
