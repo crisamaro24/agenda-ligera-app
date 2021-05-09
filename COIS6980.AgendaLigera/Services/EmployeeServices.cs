@@ -5,15 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static COIS6980.AgendaLigera.Models.Enums.AllEnumerations;
 
 namespace COIS6980.AgendaLigera.Services
 {
     public interface IEmployeeServices
     {
-        Task<List<EmployeeService>> GetServicesOffered(
-            string userId = null,
-            bool active = true,
-            bool deleted = false);
+        Task<List<EmployeeService>> GetServicesOffered(string userId = null, bool active = true, bool deleted = false);
         Task<List<Models.Service.ServiceSchedule>> GetServiceSchedulesBetweenDates(
             int serviceId,
             DateTime startDate,
@@ -23,6 +21,14 @@ namespace COIS6980.AgendaLigera.Services
             bool deleted = false);
         Task<bool> DuplicateServiceFound(string userId, string serviceName);
         Task CreateService(string userId, string serviceName, string serviceDescription, int estimatedDurationInMinutes);
+        Task AddServiceSchedule(
+            int serviceId,
+            int capacity,
+            DateTime startDate,
+            DateTime startTime,
+            DateTime endTime,
+            RecurrenceOptionEnum recurrenceOption,
+            DateTime endDate);
     }
     public class EmployeeServices : IEmployeeServices
     {
@@ -32,10 +38,7 @@ namespace COIS6980.AgendaLigera.Services
             _agendaLigeraCtx = agendaLigeraCtx;
         }
 
-        public async Task<List<EmployeeService>> GetServicesOffered(
-            string userId = null,
-            bool active = true,
-            bool deleted = false)
+        public async Task<List<EmployeeService>> GetServicesOffered(string userId = null, bool active = true, bool deleted = false)
         {
             var servicesQuery = _agendaLigeraCtx.Services
                 .Include(x => x.Employee)
@@ -152,6 +155,18 @@ namespace COIS6980.AgendaLigera.Services
                 await _agendaLigeraCtx.AddAsync(service);
                 await _agendaLigeraCtx.SaveChangesAsync();
             }
+        }
+
+        public async Task AddServiceSchedule(
+            int serviceId,
+            int capacity,
+            DateTime startDate,
+            DateTime startTime,
+            DateTime endTime,
+            RecurrenceOptionEnum recurrenceOption,
+            DateTime endDate)
+        {
+
         }
     }
 }
