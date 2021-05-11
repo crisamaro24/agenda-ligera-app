@@ -65,6 +65,9 @@
     [Parameter]
     public string ServiceName { get; set; }
 
+    [Parameter]
+    public DateTime? ScheduleDate { get; set; }
+
     private List<RecurrenceOption> recurrenceOptions;
 
     private int capacity = 1;
@@ -80,10 +83,10 @@
     protected override void OnParametersSet()
     {
         var currentTime = DateTime.UtcNow.ToLocalTime();
-        startDate = currentTime.Date;
-        startTime = currentTime;
-        endTime = currentTime.AddHours(1);
-        endDate = currentTime.AddMonths(1);
+        startDate = ScheduleDate?.Date ?? currentTime.Date;
+        startTime = ScheduleDate ?? currentTime;
+        endTime = (ScheduleDate ?? currentTime).AddHours(1);
+        endDate = (ScheduleDate?.Date ?? currentTime.Date).AddDays(1);
 
         recurrenceOptions = GetRecurrenceOptions();
     }
@@ -122,11 +125,19 @@
 
     private bool FormIsValid()
     {
-        var currentTime = DateTime.UtcNow.ToLocalTime();
-
         if (startDate == null || startTime == null || endTime == null)
             return false;
-        else if (startDate?.Date < currentTime.Date || endTime.Value < startTime.Value || startTime.Value < currentTime)
+
+        var currentTime = DateTime.UtcNow.ToLocalTime();
+        var selectedTime = new DateTime(
+            startDate?.Year ?? currentTime.Year,
+            startDate?.Month ?? currentTime.Month,
+            startDate?.Day  ?? currentTime.Day,
+            startTime?.Hour  ?? currentTime.Hour,
+            startTime?.Minute  ?? currentTime.Minute,
+            startTime?.Second  ?? currentTime.Minute);
+
+        if (selectedTime <= currentTime || TimeSpan.Compare(endTime.Value.TimeOfDay, startTime.Value.TimeOfDay) < 0)
             return false;
 
         if (selectedRecurrenceOption != RecurrenceOptionEnum.DoesNotRepeat)

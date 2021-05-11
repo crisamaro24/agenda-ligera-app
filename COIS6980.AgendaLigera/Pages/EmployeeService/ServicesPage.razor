@@ -103,9 +103,9 @@
 
     private async Task CreateSchedule()
     {
-        // Display modal to add hours for the selected service
-        await _dialogService.OpenAsync<AddServiceSchedulePage>(
-        "Crear un horario nuevo", new Dictionary<string, object> { { "ServiceId", selectedServiceId }, { "ServiceName", currentService.ServiceName } });
+        await _dialogService.OpenAsync<AddServiceSchedulePage>("Crear un horario nuevo",
+        new Dictionary<string, object> { { "ServiceId", selectedServiceId }, { "ServiceName", currentService.ServiceName } });
+        await scheduler.Reload();
     }
 
     private async Task OnLoadData(SchedulerLoadDataEventArgs args)
@@ -115,13 +115,14 @@
 
     private async Task OnSlotSelect(SchedulerSlotSelectEventArgs args)
     {
-        // Display modal to add hours for the selected service
+        await _dialogService.OpenAsync<AddServiceSchedulePage>("Crear un horario nuevo",
+        new Dictionary<string, object> { { "ServiceId", selectedServiceId }, { "ServiceName", currentService.ServiceName }, { "ScheduleDate", args.Start } });
+        await scheduler.Reload();
     }
 
     private async Task OnAppointmentSelect(SchedulerAppointmentSelectEventArgs<ServiceSchedule> args)
     {
-        // Display modal to edit or delete the selected schedule
-        await scheduler.Reload();
+        // TODO: Display modal to edit or delete the selected schedule
     }
 
     private void OnAppointmentRender(SchedulerAppointmentRenderEventArgs<ServiceSchedule> args)
