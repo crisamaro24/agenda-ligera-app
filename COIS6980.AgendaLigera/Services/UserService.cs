@@ -44,7 +44,7 @@ namespace COIS6980.AgendaLigera.Services
                     RoleId = x.Id,
                     RoleName = x.Name
                 })
-                .OrderBy(x => x.RoleName)
+                .OrderByDescending(x => x.RoleName)
                 .ToList();
 
             return userRoles;
@@ -52,32 +52,27 @@ namespace COIS6980.AgendaLigera.Services
 
         public async Task AddUserData(string roleId, string userId, string firstName, string lastName)
         {
-            if (!string.IsNullOrWhiteSpace(roleId) ||
-                !string.IsNullOrWhiteSpace(userId) ||
-                !string.IsNullOrWhiteSpace(firstName))
+            var userRole = new AspNetUserRole()
             {
-                var userRole = new AspNetUserRole()
-                {
-                    UserId = userId,
-                    RoleId = roleId
-                };
+                UserId = userId,
+                RoleId = roleId
+            };
 
-                await _agendaLigeraCtx.AddAsync(userRole);
+            await _agendaLigeraCtx.AddAsync(userRole);
 
-                var roleName = await GetRoleName(roleId);
+            var roleName = await GetRoleName(roleId);
 
-                switch (roleName.ToLowerInvariant())
-                {
-                    case "paciente":
-                        await AddServiceRecipient(userId, firstName, lastName);
-                        break;
-                    default:
-                        await AddEmployee(userId, firstName, lastName);
-                        break;
-                }
-
-                await _agendaLigeraCtx.SaveChangesAsync();
+            switch (roleName.ToLowerInvariant())
+            {
+                case "paciente":
+                    await AddServiceRecipient(userId, firstName, lastName);
+                    break;
+                default:
+                    await AddEmployee(userId, firstName, lastName);
+                    break;
             }
+
+            await _agendaLigeraCtx.SaveChangesAsync();
         }
 
         private async Task<string> GetRoleName(string roleId)

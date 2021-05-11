@@ -15,20 +15,20 @@
             }
             <div class="row">
                 <div class="col-8">
-                    <RadzenTextBox class="w-100" Placeholder="Nombre del servicio" @bind-Value=@serviceName MaxLength="100" />
+                    <RadzenTextBox class="w-100" Placeholder="Nombre del servicio" @bind-Value=@Service.ServiceName MaxLength="100" />
                 </div>
                 <div class="col-4">
-                    <RadzenNumeric class="w-100" Placeholder="Duración estimada en minutos" @bind-Value=@estimatedDurationInMinutes
+                    <RadzenNumeric class="w-100" Placeholder="Duración estimada en minutos" @bind-Value=@Service.EstimatedDurationInMinutes
                                ShowUpDown="false" TValue="int" Min="1"
                                MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Duración estimada en minutos" })) />
                 </div>
             </div>
             <br />
-            <RadzenTextArea class="d-block w-100 m-auto" Rows="5" Placeholder="Descripción del servicio" @bind-Value=@serviceDescription />
+            <RadzenTextArea class="d-block w-100 m-auto" Rows="5" Placeholder="Descripción del servicio" @bind-Value=@Service.ServiceDescription />
         </div>
         <div class="col-12 text-center mt-3">
-            <button @onclick="ConfirmServiceCreation" class="btn btn-outline-info btn-sm" type="button">
-                Crear servicio
+            <button @onclick="ConfirmServiceUpdate" class="btn btn-outline-info btn-sm" type="button">
+                Modificar servicio
             </button>
         </div>
     </div>
@@ -37,10 +37,10 @@ else
 {
     <div class="row">
         <div class="col-md-6">
-            <h3 class="fw-400">Ya tienes un servicio con el mismo nombre. ¿Estás segura de que quieres crear el servicio?</h3>
+            <h3 class="fw-400">Ya tienes un servicio con el mismo nombre. ¿Estás segura de que quieres modificar el servicio?</h3>
         </div>
         <div class="col-md-6 mt-3 text-center">
-            <button @onclick="CreateService" class="btn btn-outline-danger btn-sm" type="button">Estoy segura</button>
+            <button @onclick="UpdateService" class="btn btn-outline-danger btn-sm" type="button">Estoy segura</button>
             <button @onclick="ToggleServiceWithSameNameFoundValue" class="btn btn-outline-secondary btn-sm" type="button">Llévame de vuelta</button>
         </div>
     </div>
@@ -50,9 +50,8 @@ else
     [Parameter]
     public string UserId { get; set; }
 
-    private string serviceName;
-    private string serviceDescription;
-    private int estimatedDurationInMinutes = 30;
+    [Parameter]
+    public EmployeeService Service { get; set; }
 
     private bool serviceWithSameNameFound = false;
     private bool inputValidationFailed = false;
@@ -62,29 +61,29 @@ else
         serviceWithSameNameFound = !serviceWithSameNameFound;
     }
 
-    private async Task ConfirmServiceCreation()
+    private async Task ConfirmServiceUpdate()
     {
-        if (string.IsNullOrWhiteSpace(serviceName) || string.IsNullOrWhiteSpace(serviceDescription) || estimatedDurationInMinutes == 0)
+        if (string.IsNullOrWhiteSpace(Service.ServiceName) || string.IsNullOrWhiteSpace(Service.ServiceDescription) || Service.EstimatedDurationInMinutes == 0)
             inputValidationFailed = true;
         else
         {
             inputValidationFailed = false;
-            serviceWithSameNameFound = await _employeeServices.DuplicateServiceNameFound(UserId, serviceName);
+            serviceWithSameNameFound = await _employeeServices.DuplicateServiceNameFound(UserId, Service.ServiceName, Service.ServiceId);
 
             if (serviceWithSameNameFound == false)
-                await CreateService();
+                await UpdateService();
         }
     }
 
-    private async Task CreateService()
+    private async Task UpdateService()
     {
-        await _employeeServices.CreateService(UserId, serviceName, serviceDescription, estimatedDurationInMinutes);
+        await _employeeServices.UpdateService(Service.ServiceId, Service.ServiceName, Service.ServiceDescription, Service.EstimatedDurationInMinutes);
 
         var notification = new NotificationMessage()
         {
             Severity = NotificationSeverity.Success,
             Summary = "¡Muy bien!",
-            Detail = "El servicio ha sido creado.",
+            Detail = "El servicio ha sido modificado.",
             Duration = 3000
         };
 

@@ -43,7 +43,7 @@
                         <h3 class="fw-400">@currentService.EstimatedDurationInMinutes minutos</h3>
                     </div>
                     <div class="col-xl-2 mt-4">
-                        <button @onclick="() => EditService(currentService.ServiceId)" class="btn btn-outline-info btn-sm" type="button">Editar</button>
+                        <button @onclick="EditService" class="btn btn-outline-info btn-sm" type="button">Modificar</button>
                     </div>
                 </div>
             </div>
@@ -84,9 +84,22 @@
         }
     }
 
-    private async Task EditService(int serviceId)
+    private async Task EditService()
     {
-        // Display modal to edit or delete the service
+        var serviceToEdit = new EmployeeService()
+        {
+            ServiceId = currentService.ServiceId,
+            ServiceName = currentService.ServiceName,
+            ServiceDescription = currentService.ServiceDescription,
+            EstimatedDurationInMinutes = currentService.EstimatedDurationInMinutes,
+            IsActive = currentService.IsActive
+        };
+
+        await _dialogService.OpenAsync<EditServicePage>("Modificar el servicio", new Dictionary<string, object> { { "UserId", userId }, { "Service", serviceToEdit } });
+
+        // Update display
+        servicesOffered = await _employeeServices.GetServicesOffered(userId);
+        currentService = servicesOffered.FirstOrDefault(x => x.ServiceId == selectedServiceId);
     }
 
     private async Task OnServiceChange()
@@ -99,6 +112,12 @@
     {
         await _dialogService.OpenAsync<CreateServicePage>("Crear un servicio nuevo", new Dictionary<string, object> { { "UserId", userId } });
         servicesOffered = await _employeeServices.GetServicesOffered(userId);
+
+        if (servicesOffered.Count == 1)
+        {
+            currentService = servicesOffered.First();
+            selectedServiceId = currentService.ServiceId;
+        }
     }
 
     private async Task CreateSchedule()

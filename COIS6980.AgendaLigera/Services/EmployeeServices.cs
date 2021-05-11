@@ -19,7 +19,7 @@ namespace COIS6980.AgendaLigera.Services
             string userId = null,
             bool active = true,
             bool deleted = false);
-        Task<bool> DuplicateServiceFound(string userId, string serviceName);
+        Task<bool> DuplicateServiceNameFound(string userId, string serviceName, int serviceId = 0);
         Task CreateService(string userId, string serviceName, string serviceDescription, int estimatedDurationInMinutes);
         Task AddServiceSchedule(
             int serviceId,
@@ -29,6 +29,7 @@ namespace COIS6980.AgendaLigera.Services
             DateTime endTime,
             RecurrenceOptionEnum recurrenceOption,
             DateTime endDate);
+        Task UpdateService(int serviceId, string serviceName, string serviceDescription, int estimatedDurationInMinutes);
     }
     public class EmployeeServices : IEmployeeServices
     {
@@ -121,14 +122,18 @@ namespace COIS6980.AgendaLigera.Services
             return serviceSchedules;
         }
 
-        public async Task<bool> DuplicateServiceFound(string userId, string serviceName)
+        public async Task<bool> DuplicateServiceNameFound(string userId, string serviceName, int serviceId = 0)
         {
-            var employeeService = await _agendaLigeraCtx.Services
+            var employeeServiceQuery = _agendaLigeraCtx.Services
                 .Include(x => x.Employee)
-                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.IsDeleted == false)
                 .Where(x => x.Employee.UserId == userId)
-                .Where(x => x.Title == serviceName)
-                .FirstOrDefaultAsync();
+                .Where(x => x.Title == serviceName);
+
+            if (serviceId != 0)
+                employeeServiceQuery = employeeServiceQuery.Where(x => x.ServiceId != serviceId);
+
+            var employeeService = await employeeServiceQuery.FirstOrDefaultAsync();
 
             return (employeeService?.ServiceId ?? 0) != 0;
         }
@@ -153,6 +158,22 @@ namespace COIS6980.AgendaLigera.Services
                 };
 
                 await _agendaLigeraCtx.AddAsync(service);
+                await _agendaLigeraCtx.SaveChangesAsync();
+            }
+        }
+
+        public async Task UpdateService(int serviceId, string serviceName, string serviceDescription, int estimatedDurationInMinutes)
+        {
+            var service = await _agendaLigeraCtx.Services
+                .FirstOrDefaultAsync(x => x.ServiceId == serviceId && x.IsActive == true && x.IsDeleted == false);
+
+            if (service != null)
+            {
+                service.Title = serviceName;
+                service.Description = serviceDescription;
+                service.EstimatedDurationInMinutes = estimatedDurationInMinutes;
+
+                _agendaLigeraCtx.Entry(service).State = EntityState.Modified;
                 await _agendaLigeraCtx.SaveChangesAsync();
             }
         }
