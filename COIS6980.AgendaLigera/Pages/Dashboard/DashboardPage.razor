@@ -34,18 +34,18 @@
                             <h3 class="fw-400">@appointment.FormattedDate</h3>
                         </div>
                         @if (appointment.EndDate > currentTime)
-                    {
-                        <div class="col-xl-2 mt-4">
-                            <button @onclick="() => ManageAppointment(appointment.AppointmentId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
-                        </div>
-                    }
+                        {
+                            <div class="col-xl-2 mt-4">
+                                <button @onclick="() => ManageAppointment(appointment.AppointmentId)" class="btn btn-outline-info btn-sm" type="button">Gestionar</button>
+                            </div>
+                        }
                 </div>
             </Template>
         </RadzenDataList>
         }
         else
         {
-            <p class="lead mt-3">¡Disfruta tu día! No tiene ninguna cita hoy.</p>
+            <p class="lead text-center mt-3">¡Disfruta tu día! No tiene ninguna cita hoy.</p>
         }
     </div>
 </div>
@@ -55,11 +55,13 @@
     private DateTime currentTime;
     private DateTime? selectedDate;
     private List<AppointmentDetails> appointmentsForSelectedDate = new List<AppointmentDetails>();
+    private List<AppointmentCalendarDetails> appointmentsForCalendar = new List<AppointmentCalendarDetails>();
 
     protected override async Task OnInitializedAsync()
     {
         userId = _httpContextAccessor.HttpContext.User.GetUserId();
         await SelectedDateToCurrent();
+        await UpdateAppointmentsForCalendar();
     }
 
     private async Task RefreshAppointmentsList()
@@ -69,6 +71,7 @@
 
     private async Task OnDateChange(DateTime? date)
     {
+        await UpdateAppointmentsForCalendar();
         await RefreshAppointmentsList();
     }
 
@@ -91,8 +94,30 @@
         await RefreshAppointmentsList();
     }
 
+    private async Task UpdateAppointmentsForCalendar()
+    {
+        var firstDayOfMonth = new DateTime(selectedDate.GetValueOrDefault().Year, selectedDate.GetValueOrDefault().Month, 1);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+        appointmentsForCalendar = await _appointmentService
+            .GetAppointmentsBetweenDates(firstDayOfMonth, lastDayOfMonth, userId);
+    }
+
     private void OnDateRender(DateRenderEventArgs args)
     {
-        // Add logic to highlight the calendar picker with dates that have appointments
+        currentTime = DateTime.UtcNow.ToLocalTime();
+
+        var appointmentDates = appointmentsForCalendar.Select(x => x.Start.Date).ToList();
+        if (appointmentDates.Contains(args.Date))
+        {
+            if (args.Date.Date < currentTime.Date)
+            {
+                args.Attributes.Add("style", "background-color: #B0C4DE;");
+            }
+            else
+            {
+                args.Attributes.Add("style", "background-color: #8ff0ff;");
+            }
+        }
     }
 }
