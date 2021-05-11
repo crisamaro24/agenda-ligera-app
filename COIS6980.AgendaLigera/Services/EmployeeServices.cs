@@ -11,7 +11,7 @@ namespace COIS6980.AgendaLigera.Services
 {
     public interface IEmployeeServices
     {
-        Task<List<EmployeeService>> GetServicesOffered(string userId = null, bool active = true, bool deleted = false);
+        Task<List<EmployeeService>> GetServicesOffered(string userId = null, bool deleted = false);
         Task<List<Models.Service.ServiceSchedule>> GetServiceSchedulesBetweenDates(
             int serviceId,
             DateTime startDate,
@@ -30,6 +30,7 @@ namespace COIS6980.AgendaLigera.Services
             RecurrenceOptionEnum recurrenceOption,
             DateTime endDate);
         Task UpdateService(int serviceId, string serviceName, string serviceDescription, int estimatedDurationInMinutes);
+        Task UpdateServiceState(int serviceId, bool serviceState);
     }
     public class EmployeeServices : IEmployeeServices
     {
@@ -39,11 +40,11 @@ namespace COIS6980.AgendaLigera.Services
             _agendaLigeraCtx = agendaLigeraCtx;
         }
 
-        public async Task<List<EmployeeService>> GetServicesOffered(string userId = null, bool active = true, bool deleted = false)
+        public async Task<List<EmployeeService>> GetServicesOffered(string userId = null, bool deleted = false)
         {
             var servicesQuery = _agendaLigeraCtx.Services
                 .Include(x => x.Employee)
-                .Where(x => x.IsActive == active && x.IsDeleted == deleted);
+                .Where(x => x.IsDeleted == deleted);
 
             if (!string.IsNullOrWhiteSpace(userId))
                 servicesQuery = servicesQuery
@@ -332,6 +333,21 @@ namespace COIS6980.AgendaLigera.Services
             }
 
             return scheduleList;
+        }
+
+        public async Task UpdateServiceState(int serviceId, bool serviceState)
+        {
+            var service = await _agendaLigeraCtx.Services
+                .Where(x => x.IsDeleted == false)
+                .Where(x => x.ServiceId == serviceId)
+                .FirstOrDefaultAsync();
+
+            if (service != null)
+            {
+                service.IsActive = serviceState;
+                _agendaLigeraCtx.Entry(service).State = EntityState.Modified;
+                await _agendaLigeraCtx.SaveChangesAsync();
+            }
         }
     }
 }

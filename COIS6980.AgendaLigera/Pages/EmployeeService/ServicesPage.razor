@@ -1,6 +1,7 @@
 ﻿@page "/servicios"
 @attribute [Authorize(Roles = "Doctora")]
 @inject IHttpContextAccessor _httpContextAccessor
+@inject NotificationService _notificationService
 @inject IEmployeeServices _employeeServices
 @inject DialogService _dialogService
 
@@ -35,11 +36,11 @@
                         </div>
                     </div>
                     <div class="col-lg-3">
-                        <b>Estado</b>
-                        <h3>
-                            <span class="text-white badge @(currentService.IsActive ? "bg-success" : "bg-secondary")">@(currentService.IsActive ? "Activo" : "Pausado")</span>
-                        </h3>
-                        <b>Duración estimada</b>
+                        <b class="d-block">Estado</b>
+                        <RadzenDropDown class="w-75" Placeholder="Estado" AllowClear="false" TValue="bool" TextProperty="StateName"
+                                    ValueProperty="StateValue" Data=@serviceStateList @bind-Value=@currentService.IsActive
+                                    Change=@OnServiceStateChange />
+                        <b class="d-block">Duración estimada</b>
                         <h3 class="fw-400">@currentService.EstimatedDurationInMinutes minutos</h3>
                     </div>
                     <div class="col-xl-2 mt-4">
@@ -72,10 +73,13 @@
     private RadzenScheduler<ServiceSchedule> scheduler;
     private List<ServiceSchedule> currentServiceSchedules = new List<ServiceSchedule>();
 
+    private List<ServiceState> serviceStateList = new List<ServiceState>();
+
     protected override async Task OnParametersSetAsync()
     {
         userId = _httpContextAccessor.HttpContext.User.GetUserId();
         servicesOffered = await _employeeServices.GetServicesOffered(userId);
+        serviceStateList = GetServiceStates();
 
         if (servicesOffered.Count > 0)
         {
@@ -155,5 +159,37 @@
         {
             args.Attributes["style"] = "background: #17a2b8";
         }
+    }
+
+    private async Task OnServiceStateChange()
+    {
+        await _employeeServices.UpdateServiceState(currentService.ServiceId, currentService.IsActive);
+
+        var notification = new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "¡Muy bien!",
+            Detail = "El estado del servicio ha sido modificado.",
+            Duration = 3000
+        };
+
+        _notificationService.Notify(notification);
+    }
+
+    private List<ServiceState> GetServiceStates()
+    {
+        return new List<ServiceState>()
+        {
+            new ServiceState()
+            {
+                StateName = "Activo",
+                StateValue = true
+            },
+            new ServiceState()
+            {
+                StateName = "Pausado",
+                StateValue = false
+            }
+        };
     }
 }
