@@ -72,6 +72,7 @@ namespace COIS6980.AgendaLigera
             services.AddScoped<IAppointmentNotificationService, AppointmentNotificationService>();
             services.AddScoped<IEmployeeServices, EmployeeServices>();
             services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IUserService, UserService>();
 
             // Radzen components
             services.AddScoped<DialogService>();

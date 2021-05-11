@@ -1,0 +1,91 @@
+﻿@page "/"
+@inject IHttpContextAccessor _httpContextAccessor
+@inject DialogService _dialogService
+@inject IUserService _userService
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <h2 class="fw-400">
+            Agenda Ligera
+            <small class="text-muted">Sistema de citas en línea.</small>
+        </h2>
+    </div>
+    <div class="col-9 m-auto">
+        <p class="lead">
+            Simplemente defina sus servicios y proveedores, muestre su disponibilidad y tendrá clientes tanto
+            antiguos como nuevos reservando citas las 24 horas del día, los 7 días de la semana.
+        </p>
+    </div>
+    <div class="col-12 text-center mt-3">
+        <h2 class="fw-400">Lo que ofrecemos</h2>
+    </div>
+    <div class="col-lg-3 mt-3">
+        <div class="card text-dark bg-light mb-3" style="max-width: 18rem;">
+            <div class="card-header">
+                <span class="oi oi-check" aria-hidden="true"></span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Citas desde cualquier lugar</h5>
+                <p class="card-text">Los clientes pueden programar citas automáticamente, en cualquier momento y en cualquier lugar.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 mt-3">
+        <div class="card text-dark bg-light mb-3" style="max-width: 18rem;">
+            <div class="card-header">
+                <span class="oi oi-bell" aria-hidden="true"></span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Recordatorios</h5>
+                <p class="card-text">Los recordatorios por correo electrónico ayudan a los clientes no olvidar sus citas.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 mt-3">
+        <div class="card text-dark bg-light mb-3" style="max-width: 18rem;">
+            <div class="card-header">
+                <span class="oi oi-document" aria-hidden="true"></span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Reportes de negocio</h5>
+                <p class="card-text">Genera reportes sobre el negocio y los clientes para ayudar en la toma de decisiones.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 mt-3">
+        <div class="card text-dark bg-light mb-3" style="max-width: 18rem;">
+            <div class="card-header">
+                <span class="oi oi-people" aria-hidden="true"></span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Plataforma multiusuario</h5>
+                <p class="card-text">Tres tipos de cuentas: Doctora, Secretaria, y Paciente. Visibilidad de datos en base a su nivel de acceso.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string userId;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender == true)
+        {
+            userId = _httpContextAccessor.HttpContext.User.GetUserId();
+
+            if (!string.IsNullOrEmpty(userId))
+                await VerifyUserRegistration();
+        }
+    }
+
+    private async Task VerifyUserRegistration()
+    {
+        var userIsRegistered = await _userService.UserCompletedRegistration(userId);
+        if (userIsRegistered == false)
+        {
+            await _dialogService.OpenAsync<UserRegistrationPage>("",
+            new Dictionary<string, object> { { "UserId", userId } }, new DialogOptions() { ShowTitle = false });
+        }
+    }
+}

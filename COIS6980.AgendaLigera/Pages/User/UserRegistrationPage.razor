@@ -1,0 +1,62 @@
+﻿@inject DialogService _dialogService
+@inject NotificationService _notificationService
+@inject TooltipService _tooltipService
+@inject IUserService _userService
+
+<div class="row">
+    <div class="col-12 text-center mb-2">
+        <p class="lead">Completar inscripción</p>
+    </div>
+    <div class="col-12">
+        <div class="row mb-2">
+            <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Tipo de cuenta" AllowClear="false" TValue="string" TextProperty="RoleName"
+                            ValueProperty="RoleId" Data=@userRoles @bind-Value=@selectedRoleId
+                            MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Top, Text = "Tipo de cuenta" })) />
+        </div>
+        <div class="row mb-2">
+            <RadzenTextBox class="d-block w-50 m-auto" Placeholder="Nombre" @bind-Value=@firstName MaxLength="100" />
+        </div>
+        <div class="row mb-2">
+            <RadzenTextBox class="d-block w-50 m-auto" Placeholder="Apellidos" @bind-Value=@lastName MaxLength="200" />
+        </div>
+    </div>
+    <div class="col-12 text-center mt-3">
+        <button disabled="@(string.IsNullOrWhiteSpace(firstName))" @onclick="RegisterUser" class="btn btn-outline-info btn-sm" type="button">
+            Enviar
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string UserId { get; set; }
+
+    private string selectedRoleId;
+    private string firstName;
+    private string lastName;
+    private List<UserRole> userRoles = new List<UserRole>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        userRoles = await _userService.GetUserRoles();
+        selectedRoleId = userRoles.FirstOrDefault().RoleId;
+    }
+
+    private async Task RegisterUser()
+    {
+        await _userService.AddUserData(selectedRoleId, UserId, firstName, lastName);
+
+        var notification = new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "¡Muy bien!",
+            Detail = "Bienvenida a tu Agenda Ligera.",
+            Duration = 3000
+        };
+
+        _dialogService.Close();
+        _notificationService.Notify(notification);
+    }
+
+    private void ShowTooltip(ElementReference elementReference, TooltipOptions options = null) => _tooltipService.Open(elementReference, options.Text, options);
+}

@@ -65,9 +65,7 @@ else
     private async Task ConfirmServiceCreation()
     {
         if (string.IsNullOrWhiteSpace(serviceName) || string.IsNullOrWhiteSpace(serviceDescription) || estimatedDurationInMinutes == 0)
-        {
             inputValidationFailed = true;
-        }
         else
         {
             inputValidationFailed = false;

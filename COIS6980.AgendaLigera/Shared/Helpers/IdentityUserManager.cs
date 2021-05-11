@@ -9,7 +9,7 @@ namespace COIS6980.AgendaLigera.Shared.Helpers
         {
             var claimsIdentity = (ClaimsIdentity)principal.Identity;
             var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-            return claim.Value;
+            return claim?.Value;
         }
     }
 }
