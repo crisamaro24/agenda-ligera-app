@@ -61,17 +61,16 @@
     {
         userId = _httpContextAccessor.HttpContext.User.GetUserId();
         await SelectedDateToCurrent();
-        await UpdateAppointmentsForCalendar();
     }
 
     private async Task RefreshAppointmentsList()
     {
         appointmentsForSelectedDate = await _appointmentService.GetAppointmentDetailsListByDate(selectedDate.GetValueOrDefault(), userId);
+        await UpdateAppointmentsForCalendar();
     }
 
     private async Task OnDateChange(DateTime? date)
     {
-        await UpdateAppointmentsForCalendar();
         await RefreshAppointmentsList();
     }
 

@@ -92,9 +92,19 @@ namespace COIS6980.AgendaLigera.Services
                 if (string.IsNullOrWhiteSpace(userRole))
                     return new List<AppointmentCalendarDetails>();
 
-                if (userRole.ToLowerInvariant() == "doctora")
-                    appointmentsQuery = appointmentsQuery
+                switch (userRole.ToLowerInvariant())
+                {
+                    case "paciente":
+                        appointmentsQuery = appointmentsQuery
+                            .Where(x => x.ServiceRecipient.UserId == userId);
+                        break;
+                    case "doctora":
+                        appointmentsQuery = appointmentsQuery
                             .Where(x => x.ServiceSchedule.Service.Employee.UserId == userId);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             var appointmentsFound = await appointmentsQuery.ToListAsync();
