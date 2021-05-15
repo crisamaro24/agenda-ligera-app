@@ -43,11 +43,11 @@
             <div class="col-5 offset-1">
                 <RadzenDropDown class="w-100" Placeholder="Se repite?" AllowClear="false" TValue="RecurrenceOptionEnum" TextProperty="RecurrenceOptionText"
                                 ValueProperty="RecurrenceOptionId" Data=@recurrenceOptions @bind-Value=@selectedRecurrenceOption
-                                MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Se repite?" })) />
+                                MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "¿Se repite?" })) />
             </div>
             <div class="col-5">
                 <RadzenDatePicker class="w-100" TValue="DateTime?" @bind-Value=@endDate DateFormat="ddd, MMMM dd, yyyy" Disabled=@(selectedRecurrenceOption == RecurrenceOptionEnum.DoesNotRepeat)
-                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hasta cuando se repite?" })) />
+                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "¿Hasta cuando se repite?" })) />
             </div>
         </div>
     </div>

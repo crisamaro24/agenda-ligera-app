@@ -1,30 +1,31 @@
 ﻿@inject IAppointmentService _appointmentService
 @inject DialogService _dialogService
 @inject NotificationService _notificationService
+@inject TooltipService _tooltipService
 
 @if ((serviceProviders?.Count ?? 0) > 0)
 {
     <div class="row">
         <div class="col-12">
             <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Doctora" AllowClear="false" TValue="int" TextProperty="EmployeeName"
-                        ValueProperty="EmployeeId" Data=@serviceProviders @bind-Value=@selectedEmployeeId
-                        Change=@OnEmployeeChange />
+                        ValueProperty="EmployeeId" Data=@serviceProviders @bind-Value=@selectedEmployeeId Change=@OnEmployeeChange />
             <br />
             <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Servicio" AllowClear="false" TValue="int" TextProperty="ServiceName"
                         ValueProperty="ServiceId" Disabled=@(selectedEmployeeId == 0)
-                        Data=@employeeServices @bind-Value=@selectedServiceId
-                        Change=@OnServiceChange />
+                        Data=@employeeServices @bind-Value=@selectedServiceId Change=@OnServiceChange />
             <br />
             <RadzenDatePicker class="d-block w-50 m-auto" TValue="DateTime?" DateFormat="d" DateRender=@OnDateRender
-                          Disabled=@(selectedServiceId == 0) @bind-Value=@selectedDate
-                          Change=@OnDateChange />
+                          Disabled=@(selectedServiceId == 0) @bind-Value=@selectedDate Change=@OnDateChange
+                          MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "¿Cual día?" })) />
             <br />
             <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Hora" AllowClear="false" TValue="int" TextProperty="FormattedTime"
                         ValueProperty="ServiceScheduleId" Disabled=@((availableSchedules?.Count ?? 0) == 0)
-                        Data=@availableSchedules @bind-Value=@selectedServiceScheduleId />
+                        Data=@availableSchedules @bind-Value=@selectedServiceScheduleId
+                        MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "¿A qué hora?" })) />
             <br />
             <RadzenDropDown class="d-block w-50 m-auto" Placeholder="Paciente" AllowClear="false" TValue="int" TextProperty="ServiceRecipientName"
-                        ValueProperty="ServiceRecipientId" Data=@serviceRecipients @bind-Value=@selectedServiceRecipientId />
+                        ValueProperty="ServiceRecipientId" Data=@serviceRecipients @bind-Value=@selectedServiceRecipientId
+                        MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "¿Para quien?" })) />
         </div>
         <div class="col-12 text-center mt-3">
             <button @onclick="ConfirmAppointmentBooking" disabled="@(selectedServiceScheduleId == 0 || selectedServiceRecipientId == 0)"
@@ -122,4 +123,6 @@ else
             args.Attributes.Add("style", "background-color: #8ff0ff;");
         }
     }
+
+    private void ShowTooltip(ElementReference elementReference, TooltipOptions options = null) => _tooltipService.Open(elementReference, options.Text, options);
 }
