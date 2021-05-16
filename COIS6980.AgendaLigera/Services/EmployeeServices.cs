@@ -31,6 +31,7 @@ namespace COIS6980.AgendaLigera.Services
             DateTime endDate);
         Task UpdateService(int serviceId, string serviceName, string serviceDescription, int estimatedDurationInMinutes);
         Task UpdateServiceState(int serviceId, bool serviceState);
+        Task DeleteServiceSchedule(int serviceScheduleId);
     }
     public class EmployeeServices : IEmployeeServices
     {
@@ -346,6 +347,19 @@ namespace COIS6980.AgendaLigera.Services
             {
                 service.IsActive = serviceState;
                 _agendaLigeraCtx.Entry(service).State = EntityState.Modified;
+                await _agendaLigeraCtx.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteServiceSchedule(int serviceScheduleId)
+        {
+            var serviceSchedule = await _agendaLigeraCtx.ServiceSchedules
+                .FirstOrDefaultAsync(x => x.ServiceScheduleId == serviceScheduleId && x.IsActive == true && x.IsDeleted == false);
+
+            if (serviceSchedule != null)
+            {
+                serviceSchedule.IsActive = false;
+                _agendaLigeraCtx.Entry(serviceSchedule).State = EntityState.Modified;
                 await _agendaLigeraCtx.SaveChangesAsync();
             }
         }

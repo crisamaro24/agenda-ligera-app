@@ -1,0 +1,90 @@
+﻿@inject IEmployeeServices _employeeServices
+@inject DialogService _dialogService
+@inject NotificationService _notificationService
+@inject TooltipService _tooltipService
+
+@if (deleteServiceScheduleStatus == true)
+{
+    <div class="row">
+        <div class="col-md-6">
+            <h2 class="fw-400">¿Estás segura de que quieres eliminar el horario?</h2>
+        </div>
+        <div class="col-md-6 mt-3 text-center">
+            <button @onclick="DeleteSchedule" class="btn btn-outline-danger btn-sm" type="button">Estoy segura</button>
+            <button @onclick="ToggleDeleteServiceScheduleStatus" class="btn btn-outline-secondary btn-sm" type="button">Llévame de vuelta</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        <div class="col-12">
+            <div class="row mb-2">
+                <div class="col-12 text-center">
+                    <p class="lead">@ServiceName</p>
+                </div>
+                <div class="col-2 offset-1">
+                    <RadzenNumeric class="w-100" Placeholder="0" @bind-Value=@ServiceSchedule.ScheduledCount
+                               ShowUpDown="false" TValue="int" Min="0" Disabled=@disableInput
+                               MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Citas programadas" })) />
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-5 offset-1">
+                    <RadzenDatePicker class="w-100" TValue="DateTime" @bind-Value=@ServiceSchedule.Start
+                                  DateFormat="ddd, MMMM dd, yyyy" Disabled=@disableInput
+                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Right, Text = "Fecha de comienzo" })) />
+                </div>
+                <div class="col-4 offset-1">
+                    <RadzenDatePicker class="w-100" TValue="DateTime" @bind-Value=@ServiceSchedule.Start ShowTime="true" TimeOnly="true"
+                                  HoursStep="1" MinutesStep="10" DateFormat="h:mm tt" Disabled=@disableInput
+                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hora de comienzo" })) />
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 offset-7">
+                    <RadzenDatePicker class="w-100" TValue="DateTime" @bind-Value=@ServiceSchedule.End ShowTime="true" TimeOnly="true"
+                                  HoursStep="1" MinutesStep="10" DateFormat="h:mm tt" Disabled=@disableInput
+                                  MouseEnter=@(args => ShowTooltip(args, new TooltipOptions(){ Duration = 2000, Position = TooltipPosition.Left, Text = "Hora de finalización" })) />
+                </div>
+            </div>
+        </div>
+        <div class="col-12 text-center mt-3">
+            <button disabled="@(ServiceSchedule.ScheduledCount > 0)" @onclick="ToggleDeleteServiceScheduleStatus" class="btn btn-outline-info btn-sm" type="button">
+                Eliminar horario
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string ServiceName { get; set; }
+
+    [Parameter]
+    public ServiceSchedule ServiceSchedule { get; set; }
+
+    private bool deleteServiceScheduleStatus = false;
+
+    private bool disableInput = true;
+
+    private void ToggleDeleteServiceScheduleStatus() => deleteServiceScheduleStatus = !deleteServiceScheduleStatus;
+
+    private async Task DeleteSchedule()
+    {
+        await _employeeServices.DeleteServiceSchedule(ServiceSchedule.ServiceScheduleId);
+
+        var notification = new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "¡Muy bien!",
+            Detail = "El horario ha sido eliminado.",
+            Duration = 3000
+        };
+
+        _dialogService.Close();
+        _notificationService.Notify(notification);
+    }
+
+    private void ShowTooltip(ElementReference elementReference, TooltipOptions options = null) => _tooltipService.Open(elementReference, options.Text, options);
+}
