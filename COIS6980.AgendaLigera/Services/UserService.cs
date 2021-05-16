@@ -90,8 +90,8 @@ namespace COIS6980.AgendaLigera.Services
             var serviceRecipient = new ServiceRecipient()
             {
                 UserId = userId,
-                FirstName = firstName,
-                LastName = lastName,
+                FirstName = firstName.Trim(),
+                LastName = lastName.Trim(),
                 IsActive = true,
                 IsDeleted = false,
                 CreatedDate = DateTime.UtcNow.ToLocalTime()
@@ -105,8 +105,8 @@ namespace COIS6980.AgendaLigera.Services
             var employee = new Employee()
             {
                 UserId = userId,
-                FirstName = firstName,
-                LastName = lastName,
+                FirstName = firstName.Trim(),
+                LastName = lastName.Trim(),
                 IsActive = true,
                 IsDeleted = false
             };
