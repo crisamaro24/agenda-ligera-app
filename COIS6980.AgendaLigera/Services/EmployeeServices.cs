@@ -152,8 +152,8 @@ namespace COIS6980.AgendaLigera.Services
                 var service = new Service()
                 {
                     EmployeeId = employee.EmployeeId,
-                    Title = serviceName,
-                    Description = serviceDescription,
+                    Title = serviceName.Trim(),
+                    Description = serviceDescription.Trim(),
                     EstimatedDurationInMinutes = estimatedDurationInMinutes,
                     IsActive = true,
                     IsDeleted = false
@@ -171,8 +171,8 @@ namespace COIS6980.AgendaLigera.Services
 
             if (service != null)
             {
-                service.Title = serviceName;
-                service.Description = serviceDescription;
+                service.Title = serviceName.Trim();
+                service.Description = serviceDescription.Trim();
                 service.EstimatedDurationInMinutes = estimatedDurationInMinutes;
 
                 _agendaLigeraCtx.Entry(service).State = EntityState.Modified;

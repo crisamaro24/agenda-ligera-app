@@ -7,11 +7,6 @@
 
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Hogar
-            </NavLink>
-        </li>
         <AuthorizeView Roles="Doctora,Secretaria,Paciente">
             <li class="nav-item px-3">
                 <NavLink class="nav-link" href="dashboard">
@@ -19,7 +14,7 @@
                 </NavLink>
             </li>
         </AuthorizeView>
-        <AuthorizeView Roles="Doctora,Secretaria">
+        <AuthorizeView Roles="Secretaria">
             <li class="nav-item px-3">
                 <NavLink class="nav-link" href="calendario">
                     <span class="oi oi-calendar" aria-hidden="true"></span> Calendario
@@ -33,17 +28,17 @@
                 </NavLink>
             </li>
         </AuthorizeView>
-        <AuthorizeView Roles="Doctora,Secretaria">
-            <li class="nav-item px-3">
-                <NavLink class="nav-link" href="pacientes">
-                    <span class="oi oi-people" aria-hidden="true"></span> Pacientes
-                </NavLink>
-            </li>
-        </AuthorizeView>
         <AuthorizeView Roles="Doctora">
             <li class="nav-item px-3">
                 <NavLink class="nav-link" href="reportes">
                     <span class="oi oi-graph" aria-hidden="true"></span> Reportes
+                </NavLink>
+            </li>
+        </AuthorizeView>
+        <AuthorizeView Roles="Doctora,Secretaria">
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="pacientes">
+                    <span class="oi oi-people" aria-hidden="true"></span> Pacientes
                 </NavLink>
             </li>
         </AuthorizeView>

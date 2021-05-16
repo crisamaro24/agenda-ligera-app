@@ -534,17 +534,26 @@ namespace COIS6980.AgendaLigera.Services
 
         public async Task BookAppointment(int serviceRecipientId, int serviceScheduleId)
         {
-            var appointment = new Appointment()
-            {
-                ServiceRecipientId = serviceRecipientId,
-                ServiceScheduleId = serviceScheduleId,
-                IsActive = true,
-                IsDeleted = false,
-                CreatedDate = DateTime.UtcNow.ToLocalTime()
-            };
+            var serviceRecipientDuplicateAppointment = await _agendaLigeraCtx.Appointments
+                .Where(x => x.IsActive == true && x.IsDeleted == false)
+                .Where(x => x.ServiceRecipientId == serviceRecipientId)
+                .Where(x => x.ServiceScheduleId == serviceScheduleId)
+                .FirstOrDefaultAsync();
 
-            await _agendaLigeraCtx.AddAsync(appointment);
-            await _agendaLigeraCtx.SaveChangesAsync();
+            if (serviceRecipientDuplicateAppointment == null)
+            {
+                var appointment = new Appointment()
+                {
+                    ServiceRecipientId = serviceRecipientId,
+                    ServiceScheduleId = serviceScheduleId,
+                    IsActive = true,
+                    IsDeleted = false,
+                    CreatedDate = DateTime.UtcNow.ToLocalTime()
+                };
+
+                await _agendaLigeraCtx.AddAsync(appointment);
+                await _agendaLigeraCtx.SaveChangesAsync();
+            }
         }
     }
 }

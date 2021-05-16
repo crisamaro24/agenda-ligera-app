@@ -77,7 +77,7 @@ namespace COIS6980.AgendaLigera.Services
             emailMessage.SetTemplateData(new ReminderEmailTemplateData()
             {
                 ServiceName = reminderDetails.ServiceName,
-                When = reminderDetails.When.ToString("D", new CultureInfo("es-ES")),
+                When = reminderDetails.When.ToString("D", new CultureInfo("es-ES")) + " a las " + reminderDetails.When.ToString("hh:mm tt"),
                 CustomerName = reminderDetails.ServiceRecipientName,
                 EmployeeName = reminderDetails.ServiceProviderName,
                 CompanyName = _sendGridOptions.CompanyName
